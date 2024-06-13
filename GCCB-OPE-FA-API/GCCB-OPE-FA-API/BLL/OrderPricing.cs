@@ -8,7 +8,6 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace GCCB_OPE_FA_API.BLL
 {
@@ -21,9 +20,9 @@ namespace GCCB_OPE_FA_API.BLL
             _logger = logger;
             _connectionManager = connectionManager;
         }
-        public async Task<OrderPricingResponse> ProcessOrderPricing(OrderPricingRequest orderPricingRequest)
+        public OrderPricingResponse ProcessOrderPricing(OrderPricingRequest orderPricingRequest)
         {
-            //var key = $"{CountryCode}_{ConditionType}_{variablekey}"; //Todo
+            //var key = $"{CountryCode}_{ConditionType}_{variablekey}"; 
             _logger.LogInformation("Process order pricing");
 
             var customerParameter = new SqlParameter[] {
@@ -67,25 +66,30 @@ namespace GCCB_OPE_FA_API.BLL
                 new SqlParameter("@MaterialNumber",string.Join(",", orderPricingRequest.Items.Select(x => x.ProductId).ToList()))
             };
             var promotions = Util.DataTabletoList<Promotion>(_connectionManager.ExecuteStoredProcedure("ItemPromotion", parameter));
-
-
-            //get the db details --TODO
+            promotions = Util.GetSamplePromotionsData(); //TODO:Remove
             foreach (var item in orderPricingRequest.Items)
             {
                 var material = Materials.Where(x => x.MaterialNumber.Equals(item.ProductId)).FirstOrDefault();
-                var keyMapping = VariableKeyMapping(customer, material, Constants.CurrencyToCountry[orderPricingRequest.Currency]);
-
-                var conditionItemsParameter = new SqlParameter[]
+                if (material != null)
                 {
-                new SqlParameter("@VariableKey",string.Join(",", keyMapping.Select(x=>x.VariableKeyValue).ToList()))
-                };
-                var conditionItems = Util.DataTabletoList<ConditionItems>(_connectionManager.ExecuteStoredProcedure("ConditionItemsFetch", conditionItemsParameter));
+                    var keyMappings = VariableKeyMapping(customer, material, Constants.CurrencyToCountry[orderPricingRequest.Currency]);
 
-                conditionItems = Util.GetSampleConditionItemsData();//TODO: remove
+                    RuleHandler ruleHandler = new RuleHandler();
+                    keyMappings = ruleHandler.CheckConditionTableRule(material, keyMappings);
 
-                var pricingDetails = CalculatePricing(orderPricingRequest, item, customer, conditionItems, keyMapping, promotions);
+                    var conditionItemsParameter = new SqlParameter[]
+                    {
+                      new SqlParameter("@VariableKey",string.Join(",", keyMappings.Select(x=>x.VariableKeyValue).ToList()))
+                    };
+                    var conditionItems = Util.DataTabletoList<ConditionItems>(_connectionManager.ExecuteStoredProcedure("ConditionItemsFetch", conditionItemsParameter));
 
-                lstPricingDetails.Add(pricingDetails);
+                    conditionItems = Util.GetSampleConditionItemsData();//TODO: remove
+
+                    conditionItems.ForEach(x => x.ConditionAmountOrPercentageRate.Replace("-", ""));
+                    var pricingDetails = CalculatePricing(orderPricingRequest, item, customer, conditionItems, keyMappings, promotions);
+
+                    lstPricingDetails.Add(pricingDetails);
+                }
             }
             return lstPricingDetails;
         }
@@ -94,7 +98,7 @@ namespace GCCB_OPE_FA_API.BLL
             var pricingDetails = new PricingDetails();
             pricingDetails.product = Convert.ToInt32(item.ProductId);
             pricingDetails.quantity = item.Quantity;
-            BasicRuleHandler basicRule = new BasicRuleHandler();
+            RuleHandler basicRule = new RuleHandler();
             var rules = basicRule.CheckPricingRule(conditionItems, keyMappings);
             decimal MWST = 0;
 
@@ -188,24 +192,21 @@ namespace GCCB_OPE_FA_API.BLL
                 lstPricingComponents.Add(pricingComponent);
             }
             pricingDetails.PricingComponents = lstPricingComponents;
-
+            var promo = ApplyPromotion(orderPricingRequest, promotions, item);
+            if (promo != null)
+            {
+                pricingDetails.Rewards = promo.Rewards;
+                pricingDetails.isFreeGoods = promo.isFreeGoods;
+                pricingDetails.promotionsApplied = promo.promotionsApplied;
+            }
             return pricingDetails;
         }
         public PricingDetails ApplyPromotion(OrderPricingRequest orderPricingRequest, List<Promotion> promotions, Item item)
         {
-            //TODO
             var pricingDetail = new PricingDetails();
-            BasicRuleHandler basicRule = new BasicRuleHandler();            
-           if (item.Promotions != null)
-            {
-                promotions = promotions.Where(x => x.MaterialNumber.Equals(item.ProductId)).ToList();
-
-                var rules = basicRule.CheckPromotionRule(orderPricingRequest, promotions, item);
-            }
-            else
-            {
-
-            }
+            RuleHandler ruleHandler = new RuleHandler();
+            promotions = promotions.Where(x => x.MaterialNumber.Equals(item.ProductId)).ToList();
+            pricingDetail = ruleHandler.CheckPromotionRule(orderPricingRequest, promotions, item);
             return pricingDetail;
         }
         private List<PricingMatrix> VariableKeyMapping(Customer customer, Material material, string country)

@@ -7,7 +7,7 @@ using System.Linq;
 namespace GCCB_OPE_FA_API.BLL
 {
     //TODO
-    public class BasicRuleHandler
+    public class RuleHandler
     {
         public List<PricingMatrix> CheckPricingRule(List<ConditionItems> lstConditionItems, List<PricingMatrix> lstKeyMappings)
         {
@@ -17,8 +17,8 @@ namespace GCCB_OPE_FA_API.BLL
                 groupCondition.OrderBy(x => x.SequenceNumber).ToList();
 
                 var basePrices = (from keyMappings in groupCondition
-                                  join conditionItems in lstConditionItems on new { JobID = keyMappings.ConditionType, prodCode = keyMappings.VariableKeyValue }
-                                  equals new { JobID = conditionItems.ConditionType, prodCode = conditionItems.VariableKey }
+                                  join conditionItems in lstConditionItems on new { Type = keyMappings.ConditionType, Variable = keyMappings.VariableKeyValue }
+                                  equals new { Type = conditionItems.ConditionType, Variable = conditionItems.VariableKey }
                                   select new { keyMappings, conditionItems }).ToList();
 
 
@@ -33,7 +33,7 @@ namespace GCCB_OPE_FA_API.BLL
                     }).FirstOrDefault();
                     if (rate != null)
                     {
-                        lstKeyMappings.ForEach(x => x.YPR0 = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate));
+                        lstKeyMappings.ForEach(x => x.YPR0 = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate.Replace("-", "")));
                         lstKeyMappings.Where(x => x.ConditionType.Equals(Enumerators.ConditionTypeCode.YPR0.ToString()) && x.VariableKeyValue.Equals(rate.VariableKey)).ToList().ForEach(x => x.ConditionRecordNumber = rate.ConditionRecordNumber);
                     }
                 }
@@ -48,7 +48,7 @@ namespace GCCB_OPE_FA_API.BLL
                     }).FirstOrDefault();
                     if (rate != null)
                     {
-                        lstKeyMappings.ForEach(x => x.YBAJ = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate));
+                        lstKeyMappings.ForEach(x => x.YBAJ = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate.Replace("-", "")));
                         lstKeyMappings.Where(x => x.ConditionType.Equals(Enumerators.ConditionTypeCode.YBAJ.ToString()) && x.VariableKeyValue.Equals(rate.VariableKey)).ToList().ForEach(x => x.ConditionRecordNumber = rate.ConditionRecordNumber);
                     }
                 }
@@ -63,7 +63,7 @@ namespace GCCB_OPE_FA_API.BLL
                     }).FirstOrDefault();
                     if (rate != null)
                     {
-                        lstKeyMappings.ForEach(x => x.YBUY = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate));
+                        lstKeyMappings.ForEach(x => x.YBUY = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate.Replace("-", "")));
                         lstKeyMappings.Where(x => x.ConditionType.Equals(Enumerators.ConditionTypeCode.YBUY.ToString()) && x.VariableKeyValue.Equals(rate.VariableKey)).ToList().ForEach(x => x.ConditionRecordNumber = rate.ConditionRecordNumber);
                     }
                 }
@@ -78,7 +78,7 @@ namespace GCCB_OPE_FA_API.BLL
                     }).FirstOrDefault();
                     if (rate != null)
                     {
-                        lstKeyMappings.ForEach(x => x.YTDN = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate));
+                        lstKeyMappings.ForEach(x => x.YTDN = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate.Replace("-", "")));
                         lstKeyMappings.Where(x => x.ConditionType.Equals(Enumerators.ConditionTypeCode.YTDN.ToString()) && x.VariableKeyValue.Equals(rate.VariableKey)).ToList().ForEach(x => x.ConditionRecordNumber = rate.ConditionRecordNumber);
                     }
                 }
@@ -93,7 +93,7 @@ namespace GCCB_OPE_FA_API.BLL
                     }).FirstOrDefault();
                     if (rate != null)
                     {
-                        lstKeyMappings.ForEach(x => x.YRPO = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate));
+                        lstKeyMappings.ForEach(x => x.YRPO = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate.Replace("-", "")));
                         lstKeyMappings.Where(x => x.ConditionType.Equals(Enumerators.ConditionTypeCode.YRPO.ToString()) && x.VariableKeyValue.Equals(rate.VariableKey)).ToList().ForEach(x => x.ConditionRecordNumber = rate.ConditionRecordNumber);
                     }
                 }
@@ -108,7 +108,7 @@ namespace GCCB_OPE_FA_API.BLL
                     }).FirstOrDefault();
                     if (rate != null)
                     {
-                        lstKeyMappings.ForEach(x => x.YELP = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate));
+                        lstKeyMappings.ForEach(x => x.YELP = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate.Replace("-", "")));
                         lstKeyMappings.Where(x => x.ConditionType.Equals(Enumerators.ConditionTypeCode.YELP.ToString()) && x.VariableKeyValue.Equals(rate.VariableKey)).ToList().ForEach(x => x.ConditionRecordNumber = rate.ConditionRecordNumber);
                     }
                 }
@@ -123,7 +123,7 @@ namespace GCCB_OPE_FA_API.BLL
                     }).FirstOrDefault();
                     if (rate != null)
                     {
-                        lstKeyMappings.ForEach(x => x.YPDN = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate));
+                        lstKeyMappings.ForEach(x => x.YPDN = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate.Replace("-", "")));
                         lstKeyMappings.Where(x => x.ConditionType.Equals(Enumerators.ConditionTypeCode.YPDN.ToString()) && x.VariableKeyValue.Equals(rate.VariableKey)).ToList().ForEach(x => x.ConditionRecordNumber = rate.ConditionRecordNumber);
                     }
                 }
@@ -138,30 +138,61 @@ namespace GCCB_OPE_FA_API.BLL
                     }).FirstOrDefault();
                     if (rate != null)
                     {
-                        lstKeyMappings.ForEach(x => x.YPN2 = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate));
+                        lstKeyMappings.ForEach(x => x.YPN2 = Convert.ToDecimal(rate.ConditionAmountOrPercentageRate.Replace("-", "")));
                         lstKeyMappings.Where(x => x.ConditionType.Equals(Enumerators.ConditionTypeCode.YPN2.ToString()) && x.VariableKeyValue.Equals(rate.VariableKey)).ToList().ForEach(x => x.ConditionRecordNumber = rate.ConditionRecordNumber);
                     }
                 }
             }
             return lstKeyMappings;
         }
+        public List<PricingMatrix> CheckConditionTableRule(Material material, List<PricingMatrix> lstPricingMatrix)
+        {
+            foreach (var condition in lstPricingMatrix)
+            {
+                string key = $"{condition.ConditionType}+{condition.ConditionTableName}";
+                if (Constants.ConditionTableRule.ContainsKey(key) && !Constants.ConditionTableRule[key](material.MaterialGroup.ToString()))
+                {
+                    lstPricingMatrix.Remove(condition);
+                }
+            }
+            return lstPricingMatrix;
+        }
         public PricingDetails CheckPromotionRule(OrderPricingRequest orderPricingRequest, List<Promotion> promotions, Item item)
         {
-            List<Promotion> lstAppliedPromotion = new List<Promotion>();
-            //TODO
-            if (promotions != null)
+            DateTime deliveryDate = Convert.ToDateTime(orderPricingRequest.DeliveryDate);
+            List<Promotion> filteredPromotion = new List<Promotion>();
+            var pricingDetails = new PricingDetails();
+            if (item.Promotions.Count > 0)
             {
-                //promotions = promotions.ForEach(x => x.AgreementValidFromDate)
-                foreach(var promotion in promotions)
-                {
-                    if (promotion.AgreementValidFromDate != null && promotion.AgreementValidToDate != null)
-                    {
+                promotions = promotions?.Where(x => item.Promotions.Contains(x.PromotionID)).ToList();
+            }
+            if (promotions.Count > 0)
+            {
+                filteredPromotion = promotions.Where(x =>
+                x.MinQty != null && x.MinQty != Constants.DefaultQuantity && x.MaxQty != null && x.MaxQty != Constants.DefaultQuantity ||
+                x.AgreementValidFromDate.HasValue && x.AgreementValidToDate.HasValue &&
+                item.Quantity >= Convert.ToInt32(x.MinQty) && item.Quantity <= Convert.ToInt32(x.MaxQty) || //check promotion slab
+                deliveryDate >= x.AgreementValidFromDate && deliveryDate <= x.AgreementValidToDate).ToList(); //promotion with delivery date
 
-                    }
-                }
+                ////Filter promotions with delivery date
+                //promotions = promotions.Where(x => x.AgreementValidFromDate.HasValue
+                //&& x.AgreementValidToDate.HasValue && deliveryDate >= x.AgreementValidFromDate
+                //&& deliveryDate <= x.AgreementValidToDate).ToList();
+
+                ////Check promtion slab
+                //promotions.OrderByDescending(x => x.MaxQty);
+                //promotions.Where(x => x.MinQty != null && x.MinQty != Constants.DefaultQuantity
+                //&& x.MaxQty != null && x.MaxQty != Constants.DefaultQuantity &&
+                //item.Quantity >= Convert.ToInt32(x.MinQty) && item.Quantity <= Convert.ToInt32(x.MaxQty)).ToList();
 
             }
-            return null;
+            List<string> appliedPromotions = filteredPromotion?.Select(x => x.PromotionID).ToList();
+            pricingDetails.promotionsApplied = appliedPromotions;
+            if (filteredPromotion.Count > 0)
+                pricingDetails.Rewards = filteredPromotion.Select(x => string.IsNullOrEmpty(x.RewardValue) ? "0" : x.RewardValue)
+                    .Select(decimal.Parse).Max();
+            pricingDetails.isFreeGoods = filteredPromotion.Any(x => x.PromotionType.Equals(((int)Enumerators.PromotionType.FOC).ToString()));
+            return pricingDetails;
         }
     }
 }

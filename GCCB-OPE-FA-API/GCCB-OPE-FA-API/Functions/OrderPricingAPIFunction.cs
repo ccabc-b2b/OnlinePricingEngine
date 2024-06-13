@@ -1,16 +1,16 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
+using GCCB_OPE_FA_API.BLL;
+using GCCB_OPE_FA_API.BLL.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using GCCB_OPE_FA_API.DataManagers;
-using GCCB_OPE_FA_API.BLL;
-using GCCB_OPE_FA_API.BLL.Models;
-using Microsoft.AspNetCore.Routing;
+using System;
+using System.IO;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace GCCB_OPE_FA_API.Functions
 {
@@ -18,26 +18,54 @@ namespace GCCB_OPE_FA_API.Functions
     {
         private readonly OrderPricing _orderPricing;
         //private readonly CacheManager _cacheManager;
-        public OrderPricingAPIFunction(OrderPricing orderPricing) 
-        {           
+        public OrderPricingAPIFunction(OrderPricing orderPricing)
+        {
             _orderPricing = orderPricing;
         }
 
         [FunctionName("OrderPrice")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)][RequestBodyType(typeof(OrderPricingRequest), "")] HttpRequest req,
             ILogger log)
         {
-           //var t = _cacheManager.KeyExists("key");
-            log.LogInformation("C# HTTP trigger function processed a request.");
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            //dynamic data = JsonConvert.DeserializeObject(requestBody);
-            //name = name ?? data?.name;
-            var orderPricingRequest = JsonConvert.DeserializeObject<OrderPricingRequest>(requestBody);
-            var response =await  _orderPricing.ProcessOrderPricing(orderPricingRequest);
-           
+            try
+            {
+                var apiKey = req.Headers["x-api-key"];
 
-            return new OkObjectResult(response);
+                if (apiKey != Environment.GetEnvironmentVariable("OrderPricingAPIKey"))
+                {
+                    var response = new OrderPricingResponse
+                    {
+                        Status = (int)HttpStatusCode.Unauthorized,
+                        Message = Constants.InvalidApiKey
+                    };
+                    return new UnauthorizedObjectResult(response);
+                }
+                else
+                {
+                    //var check = _cacheManager.KeyExists("key");
+                    string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                    var orderPricingRequest = JsonConvert.DeserializeObject<OrderPricingRequest>(requestBody);
+                    log.LogInformation($"{Util.GetMarketCode(orderPricingRequest.Currency)} :OrderPrice function processed a request.");
+                    log.LogInformation($"{Util.GetMarketCode(orderPricingRequest.Currency)} :Request Payload {JsonConvert.SerializeObject(orderPricingRequest)}");
+                    var response = _orderPricing.ProcessOrderPricing(orderPricingRequest);
+                    log.LogInformation($"{Util.GetMarketCode(orderPricingRequest.Currency)} :Response Payload {JsonConvert.SerializeObject(response)}");
+                    return new OkObjectResult(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.LogError($"Exception :{ex}");
+                var response = new OrderPricingResponse
+                {
+                    Status = (int)HttpStatusCode.InternalServerError,
+                    Message = Constants.ErrorMessage
+                };
+                return new ObjectResult(response)
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError
+                };
+            }
         }
     }
 }

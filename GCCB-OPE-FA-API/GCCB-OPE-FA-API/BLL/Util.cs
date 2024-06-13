@@ -34,7 +34,7 @@ namespace GCCB_OPE_FA_API.BLL
                 }
                 return list;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -60,6 +60,15 @@ namespace GCCB_OPE_FA_API.BLL
                 _ => 0,
             };
             return length;
+        }
+        public static bool isBetween(string value, string lower, string upper)
+        {
+            return string.Compare(value, lower) >= 0 && string.Compare(value, upper) <= 0;
+        }
+        public static string GetMarketCode(string code)
+        {
+            string countryCode = Constants.CurrencyToCountry.ContainsKey(code) ? Constants.CurrencyToCountry[code] : code;
+            return $"{countryCode}{DateTime.Now.ToString("MMddyyyyHHmmss")}";
         }
         //TODO: Remove
         public static List<ConditionItems> GetSampleConditionItemsData()
@@ -110,6 +119,23 @@ namespace GCCB_OPE_FA_API.BLL
                      ConditionAmountLowerLimit ="0.00",
                      ConditionAmountUpperLimit ="0.00",
                      AccrualAmount ="0.00"
+                }
+            };
+            return lstConditionItems;
+        }
+        public static List<Promotion> GetSamplePromotionsData()
+        {
+            List<Promotion> lstConditionItems = new List<Promotion>()
+            {
+                new Promotion()
+                {
+                     PromotionID  ="0000018382",
+                     MaterialNumber ="10151900",
+                     CustomerNumber ="8617297432",
+                     PromotionType="1",
+                     MinQty="1.000",
+                     MaxQty="5.000"
+
                 }
             };
             return lstConditionItems;

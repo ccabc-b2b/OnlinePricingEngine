@@ -22,7 +22,7 @@
         }
         public enum PromotionType
         {
-            FOC,
+            FOC = 1,
             CashDiscount,
             PercentageDiscount
         }
