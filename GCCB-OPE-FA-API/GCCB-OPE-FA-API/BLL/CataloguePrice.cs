@@ -41,6 +41,8 @@ namespace GCCB_OPE_FA_API.BLL
 
             var response = new CatalogueResponse();
 
+            response.Status = (int)HttpStatusCode.OK;
+            response.Message = Constants.SuccessMessage;
             var result = new Results();
             result.Currency = catalogueRequest.Currency;
             result.TransactionDate=catalogueRequest.TransactionDate;

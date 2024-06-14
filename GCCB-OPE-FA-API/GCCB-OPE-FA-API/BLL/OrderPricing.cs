@@ -66,7 +66,6 @@ namespace GCCB_OPE_FA_API.BLL
                 new SqlParameter("@MaterialNumber",string.Join(",", orderPricingRequest.Items.Select(x => x.ProductId).ToList()))
             };
             var promotions = Util.DataTabletoList<Promotion>(_connectionManager.ExecuteStoredProcedure("ItemPromotion", parameter));
-            promotions = Util.GetSamplePromotionsData(); //TODO:Remove
             foreach (var item in orderPricingRequest.Items)
             {
                 var material = Materials.Where(x => x.MaterialNumber.Equals(item.ProductId)).FirstOrDefault();
@@ -82,9 +81,6 @@ namespace GCCB_OPE_FA_API.BLL
                       new SqlParameter("@VariableKey",string.Join(",", keyMappings.Select(x=>x.VariableKeyValue).ToList()))
                     };
                     var conditionItems = Util.DataTabletoList<ConditionItems>(_connectionManager.ExecuteStoredProcedure("ConditionItemsFetch", conditionItemsParameter));
-
-                    conditionItems = Util.GetSampleConditionItemsData();//TODO: remove
-
                     conditionItems.ForEach(x => x.ConditionAmountOrPercentageRate.Replace("-", ""));
                     var pricingDetails = CalculatePricing(orderPricingRequest, item, customer, conditionItems, keyMappings, promotions);
 

@@ -6,6 +6,8 @@ namespace GCCB_OPE_FA_API.BLL.Models
     public class CatalogueResponse
 
     {
+        public int Status { get; set; }
+        public string Message { get; set; }
         public Results Result { get; set; }
 
     }
