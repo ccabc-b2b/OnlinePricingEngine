@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "GCCB_OPE_FA_API": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7212",
+      "launchBrowser": false
+    }
+  }
+}
