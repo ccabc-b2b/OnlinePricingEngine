@@ -110,7 +110,7 @@ namespace GCCB_OPE_FA_API.BLL
                 MWST = (customer.TaxClassification.Equals("1") ? Convert.ToDecimal((5 / 100) * netValue) : 0);
                 var total = netValue + MWST;
 
-                pricingDetails.SubTotalPrice = grossValue;
+                pricingDetails.SubTotalPrice = grossValue * item.Quantity;
                 pricingDetails.Discount = netofTradeDiscount;
                 pricingDetails.NetPrice = netValue;
                 pricingDetails.TotalPrice = total;
@@ -129,7 +129,7 @@ namespace GCCB_OPE_FA_API.BLL
                 MWST = (customer.TaxClassification.Equals("1") ? Convert.ToDecimal((5 / 100) * netValue) : 0);
                 var total = netValue + MWST;
 
-                pricingDetails.SubTotalPrice = grossValue;
+                pricingDetails.SubTotalPrice = grossValue * item.Quantity;
                 pricingDetails.Discount = netofTradeDiscount;
                 pricingDetails.NetPrice = netValue;
                 pricingDetails.TotalPrice = total;
@@ -147,7 +147,7 @@ namespace GCCB_OPE_FA_API.BLL
                 MWST = (customer.TaxClassification.Equals("1") ? Convert.ToDecimal((5 / 100) * netValue) : 0);
                 var total = netValue + MWST;
 
-                pricingDetails.SubTotalPrice = grossValue;
+                pricingDetails.SubTotalPrice = grossValue * item.Quantity;
                 pricingDetails.Discount = netofTradeDiscount;
                 pricingDetails.NetPrice = netValue;
                 pricingDetails.TotalPrice = total;
@@ -166,7 +166,7 @@ namespace GCCB_OPE_FA_API.BLL
                 MWST = (customer.TaxClassification.Equals("1") ? Convert.ToDecimal((5 / 100) * netValue) : 0);
                 var total = netValue + MWST;
 
-                pricingDetails.SubTotalPrice = grossValue;
+                pricingDetails.SubTotalPrice = grossValue * item.Quantity;
                 pricingDetails.Discount = netofTradeDiscount;
                 pricingDetails.NetPrice = netValue;
                 pricingDetails.TotalPrice = total;
