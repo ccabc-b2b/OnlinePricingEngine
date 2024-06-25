@@ -45,10 +45,12 @@ namespace GCCB_OPE_FA_API.Functions
                 }
                 else
                 {
-                    log.LogInformation("C# HTTP trigger function processed a request.");
                     string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                     var catalogueRequest = JsonConvert.DeserializeObject<CatalogueRequest>(requestBody);
+                    log.LogInformation($"{catalogueRequest.CountryCode} :OrderPrice function processed a request.");
+                    log.LogInformation($"{catalogueRequest.CountryCode}:Request Payload {JsonConvert.SerializeObject(catalogueRequest)}");
                     var response = await _cataloguePrice.ProcessCataloguePrice(catalogueRequest);
+                    log.LogInformation($"{catalogueRequest.CountryCode} :Response Payload {JsonConvert.SerializeObject(response)}");
                     return new OkObjectResult(response);
                 }
             }
