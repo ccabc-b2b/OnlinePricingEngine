@@ -26,13 +26,13 @@ namespace GCCB_OPE_FA_API.BLL
         public async Task<CatalogueResponse> ProcessCataloguePrice(CatalogueRequest catalogueRequest)
         {
             //var key = $"{CountryCode}_{ConditionType}_{variablekey}"; //Todo
-            _logger.LogInformation("Process order pricing");
+            _logger.LogInformation("Process catalog pricing");
 
             var customerParameter = new SqlParameter[] {
                 new SqlParameter("@CustomerNumber",catalogueRequest.SoldToCustomerId)
             };
             var customer = Util.DataTabletoList<Customer>(_connectionManager.ExecuteStoredProcedure("CustomerFetch", customerParameter)).FirstOrDefault();
-            List<string> materiallist = null;
+            List<string> materiallist = _connectionManager.FetchMaterial(catalogueRequest.SoldToCustomerId);
             var materialParameter = new SqlParameter[]
             {
                 new SqlParameter("@MaterialNumber",string.Join(",", materiallist.ToList()))
@@ -69,7 +69,7 @@ namespace GCCB_OPE_FA_API.BLL
 
                 Items item = new Items();
                 item.ProductId = material.MaterialNumber;
-                item.BasePrice = conditionItems[0].CurrencyOrPercentageRateUnit;  
+                item.BasePrice = conditionItems[0].ConditionAmountOrPercentageRate;  
                 lstItems.Add(item);
             }
             return lstItems;
