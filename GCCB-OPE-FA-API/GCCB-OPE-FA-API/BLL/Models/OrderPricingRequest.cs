@@ -12,8 +12,6 @@ namespace GCCB_OPE_FA_API.BLL.Models
         public string Currency { get; set; }
         [Required, NotNull]
         public string DeliveryDate { get; set; }
-        public int ApplyPromotion { get; set; }
-        public bool TaxExempt { get; set; }
         [Required, NotNull]
         public List<Item> Items { get; set; }
     }
