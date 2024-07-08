@@ -162,10 +162,6 @@ namespace GCCB_OPE_FA_API.BLL
             DateTime deliveryDate = Convert.ToDateTime(orderPricingRequest.DeliveryDate);
             List<Promotion> filteredPromotion = new List<Promotion>();
             var pricingDetails = new PricingDetails();
-            if (item.Promotions.Count > 0)
-            {
-                promotions = promotions?.Where(x => item.Promotions.Contains(x.PromotionID)).ToList();
-            }
             if (promotions.Count > 0)
             {
                 filteredPromotion = promotions.Where(x =>

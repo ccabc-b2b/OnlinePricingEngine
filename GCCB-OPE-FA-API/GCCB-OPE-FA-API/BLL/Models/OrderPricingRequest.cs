@@ -23,6 +23,5 @@ namespace GCCB_OPE_FA_API.BLL.Models
         public string UOMId { get; set; }
         [Required, NotNull]
         public int Quantity { get; set; }
-        public List<string> Promotions { get; set; }
     }
 }

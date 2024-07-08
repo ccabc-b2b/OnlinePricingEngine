@@ -32,7 +32,7 @@ namespace GCCB_OPE_FA_API.BLL
                 new SqlParameter("@CustomerNumber",catalogueRequest.SoldToCustomerId)
             };
             var customer = Util.DataTabletoList<Customer>(_connectionManager.ExecuteStoredProcedure("CustomerFetch", customerParameter)).FirstOrDefault();
-            List<string> materiallist = _connectionManager.FetchMaterial(catalogueRequest.SoldToCustomerId);
+            List<string> materiallist = null;//_connectionManager.FetchMaterial(catalogueRequest.SoldToCustomerId);
             var materialParameter = new SqlParameter[]
             {
                 new SqlParameter("@MaterialNumber",string.Join(",", materiallist.ToList()))
