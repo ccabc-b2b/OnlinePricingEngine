@@ -48,7 +48,7 @@ namespace GCCB_OPE_FA_API.BLL
             result.Discount = result.PricingDetails.Sum(x => x.Discount);
             result.NetPrice = result.PricingDetails.Sum(x => x.NetPrice);
             result.TotalPrice = result.PricingDetails.Sum(x => x.TotalPrice);
-            result.TotalPrice = result.PricingDetails.Sum(x => x.TotalTax);
+            result.TotalTax = result.PricingDetails.Sum(x => x.TotalTax);
             result.SalesOrg = customer.SalesOrg;
             result.SalesRoute = customer.SalesRoute;
             response.Result = result;
