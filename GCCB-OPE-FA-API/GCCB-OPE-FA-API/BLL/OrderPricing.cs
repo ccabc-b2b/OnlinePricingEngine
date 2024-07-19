@@ -126,7 +126,7 @@ namespace GCCB_OPE_FA_API.BLL
                 var netValue = netofEDLP - rules.Select(x => x.YPDN).FirstOrDefault() - rules.Select(x => x.YPN2).FirstOrDefault();
 
                 //totaltax Mwst = 5 % of Netvalue
-                MWST = (customer.TaxClassification.Equals("1") ? Convert.ToDecimal((5 / 100) * netValue) : 0);
+                MWST = (customer.TaxClassification.Equals("1") ? 5 * netValue / 100 : 0);
                 var total = netValue + MWST;
 
                 pricingDetails.SubTotalPrice = grossValue * item.Quantity;
@@ -144,7 +144,7 @@ namespace GCCB_OPE_FA_API.BLL
                 var netValue = netofEDLP - rules.Select(x => x.YPDN).FirstOrDefault() - rules.Select(x => x.YPN2).FirstOrDefault();
 
                 //totaltax Mwst = 5 % of Netvalue
-                MWST = (customer.TaxClassification.Equals("1") ? Convert.ToDecimal((5 / 100) * netValue) : 0);
+                MWST = (customer.TaxClassification.Equals("1") ? 5 * netValue / 100 : 0);
                 var total = netValue + MWST;
 
                 pricingDetails.SubTotalPrice = grossValue * item.Quantity;
@@ -163,7 +163,7 @@ namespace GCCB_OPE_FA_API.BLL
                 var netValue = netofEDLP - rules.Select(x => x.YPDN).FirstOrDefault() - rules.Select(x => x.YPN2).FirstOrDefault();
 
                 //totaltax Mwst = 5 % of Netvalue
-                MWST = (customer.TaxClassification.Equals("1") ? Convert.ToDecimal((5 / 100) * netValue) : 0);
+                MWST = (customer.TaxClassification.Equals("1") ? 5 * netValue / 100 : 0);
                 var total = netValue + MWST;
 
                 pricingDetails.SubTotalPrice = grossValue * item.Quantity;
