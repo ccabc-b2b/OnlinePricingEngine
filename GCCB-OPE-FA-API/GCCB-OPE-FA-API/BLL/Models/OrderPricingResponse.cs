@@ -46,17 +46,5 @@ namespace GCCB_OPE_FA_API.BLL.Models
         public string TableName { get; set; }
         public string VariableKey { get; set; }
     }
-    //public class CalculatedResults
-    //{
-    //    public string SubTotalPrice { get; set; }
-    //    public string SubToRewardstalPrice { get; set; }
-    //    public string Discount { get; set; }
-    //    public string NetPrice { get; set; }
-    //    public string TotalPrice { get; set; }
-    //    public string TotalTax { get; set; }
-    //    public string SalesRoute { get; set; }
-    //    public string SalesOrg { get; set; }
-
-    //}
 
 }

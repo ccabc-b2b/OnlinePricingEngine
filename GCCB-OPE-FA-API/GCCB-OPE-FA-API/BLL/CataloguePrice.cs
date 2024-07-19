@@ -25,14 +25,12 @@ namespace GCCB_OPE_FA_API.BLL
         }
         public async Task<CatalogueResponse> ProcessCataloguePrice(CatalogueRequest catalogueRequest)
         {
-            //var key = $"{CountryCode}_{ConditionType}_{variablekey}"; //Todo
-            _logger.LogInformation("Process catalog pricing");
-
+            
             var customerParameter = new SqlParameter[] {
                 new SqlParameter("@CustomerNumber",catalogueRequest.SoldToCustomerId)
             };
             var customer = Util.DataTabletoList<Customer>(_connectionManager.ExecuteStoredProcedure("CustomerFetch", customerParameter)).FirstOrDefault();
-            List<string> materiallist = null;//_connectionManager.FetchMaterial(catalogueRequest.SoldToCustomerId);
+            List<string> materiallist = null;
             var materialParameter = new SqlParameter[]
             {
                 new SqlParameter("@MaterialNumber",string.Join(",", materiallist.ToList()))
@@ -52,11 +50,11 @@ namespace GCCB_OPE_FA_API.BLL
 
             return response;
         }
-        public List<Items> FetchMaterialBasePrice(CatalogueRequest orderPricingRequest, Customer customer, List<Material> Materials)
+        private List<Items> FetchMaterialBasePrice(CatalogueRequest orderPricingRequest, Customer customer, List<Material> Materials)
         {
             List<Items> lstItems = new List<Items>();
 
-            //get the db details --TODO
+            
             foreach (var material in Materials)
             { 
                 var keyMapping =VariableKeyMapping(customer, material, Constants.CurrencyToCountry[orderPricingRequest.Currency]);
@@ -90,10 +88,8 @@ namespace GCCB_OPE_FA_API.BLL
                     {
                         case Constants.Customer:
                             variableKey += (customer.CustomerNumber != null) ? customer.CustomerNumber.PadRight(Util.CharLengthMapping(Constants.Customer), ' ') : "";
-                            //variableKey += "0000005000";
                             break;
                         case Constants.Material:
-                            //variableKey += "10151900";
                             variableKey += (material.MaterialNumber != null) ? material.MaterialNumber.PadRight(Util.CharLengthMapping(Constants.Material), '0') : "";
                             break;
                         case Constants.PriceList:
@@ -135,7 +131,6 @@ namespace GCCB_OPE_FA_API.BLL
                 }
                 pricingMatrix.VariableKeyValue = variableKey;
             }
-            //var lst1 = lst.Distinct().ToList();
             return lstPricingMatrix;
         }
     }

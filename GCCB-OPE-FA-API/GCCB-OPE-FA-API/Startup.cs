@@ -18,31 +18,25 @@ namespace GCCB_OPE_FA_API
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            ConfigurationBuilder _builder = new ConfigurationBuilder();
-            _builder.AddAzureKeyVault(new Uri(Environment.GetEnvironmentVariable("KeyVaultURI")), new DefaultAzureCredential());
-            IConfiguration configuration = _builder.Build();
+            //ConfigurationBuilder _builder = new ConfigurationBuilder();
+            //_builder.AddAzureKeyVault(new Uri(Environment.GetEnvironmentVariable("KeyVaultURI")), new DefaultAzureCredential());
+            //IConfiguration configuration = _builder.Build();
 
             builder.Services.AddLogging();
-            // builder.Services.AddHttpClient();
+            
             builder.Services.AddSingleton(provider =>
             {
-                //var configuration = provider.GetRequiredService<IConfiguration>();
-                var connectionString = configuration["DatabaseConnectionString"];
+                var connectionString = Environment.GetEnvironmentVariable("DatabaseConnectionString");
                 return new Connection { ConnectionString = connectionString };
             });
-            // builder.Services.AddSingleton(proviider => new CacheManager(Environment.GetEnvironmentVariable("RedisConnectionString")));
 
-            Environment.SetEnvironmentVariable("OrderPricingAPIKey", configuration["OrderPricingAPIKey"]);
-            Environment.SetEnvironmentVariable("CatalogueAPIKey", configuration["CatalogueAPIKey"]);
+            //Environment.SetEnvironmentVariable("OrderPricingAPIKey", configuration["OrderPricingAPIKey"]);
+            //Environment.SetEnvironmentVariable("CatalogueAPIKey", configuration["CatalogueAPIKey"]);
 
             builder.Services.AddScoped<OrderPricing>();
             builder.Services.AddScoped<ConnectionManager>();
             builder.Services.AddScoped<CataloguePrice>();
 
-            //builder.Services.AddSwaggerGen(c =>
-            //{
-            //    c.SwaggerDoc("v1",new Microsoft.OpenApi.Models.OpenApiInfo { Title = "B2B API", Version = "v1" });
-            //});
             builder.AddSwashBuckle(Assembly.GetExecutingAssembly(), opts =>
             {
                 opts.AddCodeParameter = false;

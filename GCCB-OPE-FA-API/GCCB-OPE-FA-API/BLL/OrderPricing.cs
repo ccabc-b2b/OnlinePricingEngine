@@ -22,14 +22,11 @@ namespace GCCB_OPE_FA_API.BLL
         }
         public OrderPricingResponse ProcessOrderPricing(OrderPricingRequest orderPricingRequest)
         {
-            //var key = $"{CountryCode}_{ConditionType}_{variablekey}"; 
-            _logger.LogInformation("Process order pricing");
-
             var customerParameter = new SqlParameter[] {
                 new SqlParameter("@CustomerNumber",orderPricingRequest.SoldToCustomerId)
             };
             var customer = Util.DataTabletoList<Customer>(_connectionManager.ExecuteStoredProcedure("CustomerFetch", customerParameter)).FirstOrDefault();
-            //string value = "'"+string.Join("','", productIds)+"'";
+
             var materialParameter = new SqlParameter[]
             {
                 new SqlParameter("@MaterialNumber",string.Join(",", orderPricingRequest.Items.Select(x => x.ProductId).ToList()))
@@ -41,7 +38,7 @@ namespace GCCB_OPE_FA_API.BLL
             response.Status = (int)HttpStatusCode.OK;
             response.Message = Constants.SuccessMessage;
             var result = new Result();
-            result.SyncDate = DateTime.Now;//Todo        
+            result.SyncDate = DateTime.Now;        
             result.PricingDetails = CalculatePricePromo(orderPricingRequest, customer, materials);
             result.SubTotalPrice = result.PricingDetails.Sum(x => x.SubTotalPrice);
             result.Rewards = result.PricingDetails.Sum(x => x.Rewards);
@@ -100,13 +97,11 @@ namespace GCCB_OPE_FA_API.BLL
 
             if (orderPricingRequest.Currency == Constants.AED)
             {
-                var grossValue = rules.Select(x => x.YPR0).FirstOrDefault() - rules.Select(x => x.YBAJ).FirstOrDefault();//YPR0 - YBAJ;
-                var totalTradeDiscount = rules.Select(x => x.YBUY).FirstOrDefault() + rules.Select(x => x.YTDN).FirstOrDefault() + rules.Select(x => x.YRPO).FirstOrDefault();//YBUY + YTDN + YRPO;
+                var grossValue = rules.Select(x => x.YPR0).FirstOrDefault() - rules.Select(x => x.YBAJ).FirstOrDefault();
+                var totalTradeDiscount = rules.Select(x => x.YBUY).FirstOrDefault() + rules.Select(x => x.YTDN).FirstOrDefault() + rules.Select(x => x.YRPO).FirstOrDefault();
                 var netofTradeDiscount = grossValue - totalTradeDiscount;
                 var netofEDLP = netofTradeDiscount - rules.Select(x => x.YELP).FirstOrDefault();
                 var netValue = netofEDLP - rules.Select(x => x.YPDN).FirstOrDefault() - rules.Select(x => x.YPN2).FirstOrDefault();
-                //var consumerPromotion = YAC1 + YAC4 + YAC2 + YAC3 + YAC5 + YAC6;
-                //totaltax Mwst = 5 % of Netvalue
                 MWST = (customer.TaxClassification.Equals("1") ? Convert.ToDecimal((5 / 100) * netValue) : 0);
                 var total = netValue + MWST;
 
@@ -119,13 +114,12 @@ namespace GCCB_OPE_FA_API.BLL
 
             if (orderPricingRequest.Currency == Constants.OMR)
             {
-                var grossValue = (rules.Select(x => x.YPR0).FirstOrDefault() < rules.Select(x => x.YBAJ).FirstOrDefault()) ? rules.Select(x => x.YPR0).FirstOrDefault() : rules.Select(x => x.YBAJ).FirstOrDefault();//YPR0 less YBAJ;
-                var totalTradeDiscount = rules.Select(x => x.YBUY).FirstOrDefault() + rules.Select(x => x.YTDN).FirstOrDefault() + rules.Select(x => x.YRPO).FirstOrDefault();//YBUY + YTDN + YRPO;
+                var grossValue = (rules.Select(x => x.YPR0).FirstOrDefault() < rules.Select(x => x.YBAJ).FirstOrDefault()) ? rules.Select(x => x.YPR0).FirstOrDefault() : rules.Select(x => x.YBAJ).FirstOrDefault();
+                var totalTradeDiscount = rules.Select(x => x.YBUY).FirstOrDefault() + rules.Select(x => x.YTDN).FirstOrDefault() + rules.Select(x => x.YRPO).FirstOrDefault();
                 var netofTradeDiscount = grossValue - totalTradeDiscount;
                 var netofEDLP = netofTradeDiscount - rules.Select(x => x.YELP).FirstOrDefault();
                 var netValue = netofEDLP - rules.Select(x => x.YPDN).FirstOrDefault() - rules.Select(x => x.YPN2).FirstOrDefault();
 
-                //totaltax Mwst = 5 % of Netvalue
                 MWST = (customer.TaxClassification.Equals("1") ? Convert.ToDecimal((5 / 100) * netValue) : 0);
                 var total = netValue + MWST;
 
@@ -137,13 +131,12 @@ namespace GCCB_OPE_FA_API.BLL
             }
             if (orderPricingRequest.Currency == Constants.QAR)
             {
-                var grossValue = (rules.Select(x => x.YPR0).FirstOrDefault() < rules.Select(x => x.YBAJ).FirstOrDefault()) ? rules.Select(x => x.YPR0).FirstOrDefault() : rules.Select(x => x.YBAJ).FirstOrDefault();//YPR0 less YBAJ;
-                var totalTradeDiscount = rules.Select(x => x.YBUY).FirstOrDefault() + rules.Select(x => x.YTDN).FirstOrDefault() + rules.Select(x => x.YRPO).FirstOrDefault();//YBUY + YTDN + YRPO;
+                var grossValue = (rules.Select(x => x.YPR0).FirstOrDefault() < rules.Select(x => x.YBAJ).FirstOrDefault()) ? rules.Select(x => x.YPR0).FirstOrDefault() : rules.Select(x => x.YBAJ).FirstOrDefault();
+                var totalTradeDiscount = rules.Select(x => x.YBUY).FirstOrDefault() + rules.Select(x => x.YTDN).FirstOrDefault() + rules.Select(x => x.YRPO).FirstOrDefault();
                 var netofTradeDiscount = grossValue - totalTradeDiscount;
                 var netofEDLP = netofTradeDiscount - rules.Select(x => x.YELP).FirstOrDefault();
                 var netValue = netofEDLP - rules.Select(x => x.YPDN).FirstOrDefault() - rules.Select(x => x.YPN2).FirstOrDefault();
 
-                //totaltax Mwst = 5 % of Netvalue
                 MWST = (customer.TaxClassification.Equals("1") ? Convert.ToDecimal((5 / 100) * netValue) : 0);
                 var total = netValue + MWST;
 
@@ -156,13 +149,12 @@ namespace GCCB_OPE_FA_API.BLL
             }
             if (orderPricingRequest.Currency == Constants.BHD)
             {
-                var grossValue = (rules.Select(x => x.YPR0).FirstOrDefault() < rules.Select(x => x.YBAJ).FirstOrDefault()) ? rules.Select(x => x.YPR0).FirstOrDefault() : rules.Select(x => x.YBAJ).FirstOrDefault();//YPR0 less YBAJ;
-                var totalTradeDiscount = rules.Select(x => x.YBUY).FirstOrDefault() + rules.Select(x => x.YTDN).FirstOrDefault() + rules.Select(x => x.YRPO).FirstOrDefault();//YBUY + YTDN + YRPO;
+                var grossValue = (rules.Select(x => x.YPR0).FirstOrDefault() < rules.Select(x => x.YBAJ).FirstOrDefault()) ? rules.Select(x => x.YPR0).FirstOrDefault() : rules.Select(x => x.YBAJ).FirstOrDefault();
+                var totalTradeDiscount = rules.Select(x => x.YBUY).FirstOrDefault() + rules.Select(x => x.YTDN).FirstOrDefault() + rules.Select(x => x.YRPO).FirstOrDefault();
                 var netofTradeDiscount = grossValue - totalTradeDiscount;
                 var netofEDLP = netofTradeDiscount - rules.Select(x => x.YELP).FirstOrDefault();
                 var netValue = netofEDLP - rules.Select(x => x.YPDN).FirstOrDefault() - rules.Select(x => x.YPN2).FirstOrDefault();
 
-                //totaltax Mwst = 5 % of Netvalue
                 MWST = (customer.TaxClassification.Equals("1") ? Convert.ToDecimal((5 / 100) * netValue) : 0);
                 var total = netValue + MWST;
 
@@ -172,7 +164,7 @@ namespace GCCB_OPE_FA_API.BLL
                 pricingDetails.TotalPrice = total;
                 pricingDetails.TotalTax = MWST;
             }
-            //TODO: loop rules to assign pricing components
+
             rules = rules.Where(x => x.ConditionRecordNumber != null).ToList();
             List<PricingComponent> lstPricingComponents = new List<PricingComponent>();
             foreach (var pricing in rules)
@@ -221,10 +213,8 @@ namespace GCCB_OPE_FA_API.BLL
                     {
                         case Constants.Customer:
                             variableKey += (customer.CustomerNumber != null) ? customer.CustomerNumber.PadRight(Util.CharLengthMapping(Constants.Customer), ' ') : "";
-                            //variableKey += "0000005000";
                             break;
                         case Constants.Material:
-                            //variableKey += "10151900";
                             variableKey += (material.MaterialNumber != null) ? material.MaterialNumber.PadRight(Util.CharLengthMapping(Constants.Material), '0') : "";
                             break;
                         case Constants.PriceList:
@@ -266,7 +256,6 @@ namespace GCCB_OPE_FA_API.BLL
                 }
                 pricingMatrix.VariableKeyValue = variableKey;
             }
-            //var lst1 = lst.Distinct().ToList();
             return lstPricingMatrix;
         }
     }

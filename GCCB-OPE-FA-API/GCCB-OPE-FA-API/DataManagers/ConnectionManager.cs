@@ -16,12 +16,6 @@ namespace GCCB_OPE_FA_API.DataManagers
             _sqlConnection = new SqlConnection(_connection.ConnectionString);
             _logger = logger;
         }
-        /// <summary>
-        /// Returns the result of the stored procedure as a datatable.
-        /// </summary>
-        /// <param name="procedureName"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
         public DataTable ExecuteStoredProcedure(string procedureName, SqlParameter[] parameters = null)
         {
             var dataTable = new DataTable();
@@ -55,12 +49,6 @@ namespace GCCB_OPE_FA_API.DataManagers
             }
             return dataTable;
         }
-        /// <summary>
-        /// Execute stored procedure to insert/update/delete the records.
-        /// </summary>
-        /// <param name="procedureName"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
         public int ExecuteStoredProcedureNonQuery(string procedureName, SqlParameter[] parameters = null)
         {
             int rowsAffected = 0;
@@ -103,9 +91,6 @@ namespace GCCB_OPE_FA_API.DataManagers
             }
         }
     }
-    /// <summary>
-    /// database connection string
-    /// </summary>
     public class Connection
     {
         public string ConnectionString { get; set; }

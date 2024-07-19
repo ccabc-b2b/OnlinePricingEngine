@@ -17,7 +17,6 @@ namespace GCCB_OPE_FA_API.Functions
     public class OrderPricingAPIFunction
     {
         private readonly OrderPricing _orderPricing;
-        //private readonly CacheManager _cacheManager;
         public OrderPricingAPIFunction(OrderPricing orderPricing)
         {
             _orderPricing = orderPricing;
@@ -43,7 +42,6 @@ namespace GCCB_OPE_FA_API.Functions
                 }
                 else
                 {
-                    //var check = _cacheManager.KeyExists("key");
                     string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                     var orderPricingRequest = JsonConvert.DeserializeObject<OrderPricingRequest>(requestBody);
                     log.LogInformation($"{Util.GetMarketCode(orderPricingRequest.Currency)} :OrderPrice function processed a request.");

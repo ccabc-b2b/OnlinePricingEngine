@@ -6,7 +6,6 @@ using System.Linq;
 
 namespace GCCB_OPE_FA_API.BLL
 {
-    //TODO
     public class RuleHandler
     {
         public List<PricingMatrix> CheckPricingRule(List<ConditionItems> lstConditionItems, List<PricingMatrix> lstKeyMappings)

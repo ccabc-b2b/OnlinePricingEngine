@@ -7,12 +7,6 @@ namespace GCCB_OPE_FA_API.BLL
 {
     public static class Util
     {
-        /// <summary>
-        /// Convert datatable to list
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="dt"></param>
-        /// <returns></returns>
         public static List<T> DataTabletoList<T>(DataTable dt) where T : new()
         {
             try
