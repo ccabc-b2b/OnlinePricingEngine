@@ -43,12 +43,12 @@ namespace GCCB_OPE_FA_API.BLL
             var result = new Result();
             result.SyncDate = DateTime.Now;//Todo        
             result.PricingDetails = CalculatePricePromo(orderPricingRequest, customer, materials);
-            result.SubTotalPrice = result.PricingDetails.Sum(x => x.SubTotalPrice);
-            result.Rewards = result.PricingDetails.Sum(x => x.Rewards);
-            result.Discount = result.PricingDetails.Sum(x => x.Discount);
-            result.NetPrice = result.PricingDetails.Sum(x => x.NetPrice);
-            result.TotalPrice = result.PricingDetails.Sum(x => x.TotalPrice);
-            result.TotalTax = result.PricingDetails.Sum(x => x.TotalTax);
+            result.SubTotalPrice = result.PricingDetails.Sum(x => x.SubTotalPrice * x.quantity);
+            result.Rewards = result.PricingDetails.Sum(x => x.Rewards * x.quantity);
+            result.Discount = result.PricingDetails.Sum(x => x.Discount * x.quantity);
+            result.NetPrice = result.PricingDetails.Sum(x => x.NetPrice * x.quantity);
+            result.TotalPrice = result.PricingDetails.Sum(x => x.TotalPrice * x.quantity);
+            result.TotalTax = result.PricingDetails.Sum(x => x.TotalTax * x.quantity);
             result.SalesOrg = customer.SalesOrg;
             result.SalesRoute = customer.SalesRoute;
             response.Result = result;
