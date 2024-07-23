@@ -111,7 +111,7 @@ namespace GCCB_OPE_FA_API.BLL
                 var total = netValue + MWST;
 
                 pricingDetails.SubTotalPrice = grossValue;
-                pricingDetails.Discount = netofTradeDiscount;
+                pricingDetails.Discount = totalTradeDiscount;
                 pricingDetails.NetPrice = netValue;
                 pricingDetails.TotalPrice = total;
                 pricingDetails.TotalTax = MWST;
@@ -130,7 +130,7 @@ namespace GCCB_OPE_FA_API.BLL
                 var total = netValue + MWST;
 
                 pricingDetails.SubTotalPrice = grossValue;
-                pricingDetails.Discount = netofTradeDiscount;
+                pricingDetails.Discount = totalTradeDiscount;
                 pricingDetails.NetPrice = netValue;
                 pricingDetails.TotalPrice = total;
                 pricingDetails.TotalTax = MWST;
@@ -148,7 +148,7 @@ namespace GCCB_OPE_FA_API.BLL
                 var total = netValue + MWST;
 
                 pricingDetails.SubTotalPrice = grossValue;
-                pricingDetails.Discount = netofTradeDiscount;
+                pricingDetails.Discount = totalTradeDiscount;
                 pricingDetails.NetPrice = netValue;
                 pricingDetails.TotalPrice = total;
                 pricingDetails.TotalTax = MWST;
@@ -167,7 +167,7 @@ namespace GCCB_OPE_FA_API.BLL
                 var total = netValue + MWST;
 
                 pricingDetails.SubTotalPrice = grossValue;
-                pricingDetails.Discount = netofTradeDiscount;
+                pricingDetails.Discount = totalTradeDiscount;
                 pricingDetails.NetPrice = netValue;
                 pricingDetails.TotalPrice = total;
                 pricingDetails.TotalTax = MWST;
