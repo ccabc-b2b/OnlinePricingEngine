@@ -25,7 +25,7 @@ namespace GCCB_OPE_FA_API.BLL
         }
         public async Task<CatalogueResponse> ProcessCataloguePrice(CatalogueRequest catalogueRequest)
         {
-            //var key = $"{CountryCode}_{ConditionType}_{variablekey}"; //Todo
+            //var key = $"{CountryCode}_{ConditionType}_{variablekey}"; //todo
             _logger.LogInformation("Process catalog pricing");
 
             var customerParameter = new SqlParameter[] {
