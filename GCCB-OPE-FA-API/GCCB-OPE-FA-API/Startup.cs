@@ -27,7 +27,7 @@ namespace GCCB_OPE_FA_API
             builder.Services.AddSingleton(provider =>
             {
                 //var configuration = provider.GetRequiredService<IConfiguration>();
-                var connectionString = Environment.GetEnvironmentVariable("DatabaseConnectionString");
+                var connectionString = Environment.GetEnvironmentVariable("DatabaseConnectionString",EnvironmentVariableTarget.Process);
                 return new Connection { ConnectionString = connectionString };
             });
             // builder.Services.AddSingleton(proviider => new CacheManager(Environment.GetEnvironmentVariable("RedisConnectionString")));
