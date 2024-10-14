@@ -34,7 +34,7 @@ namespace GCCB_OPE_FA_API.Functions
             {
                 var apiKey = req.Headers["x-api-key"];
 
-                if (apiKey != Environment.GetEnvironmentVariable("CatalogueAPIKey"))
+                if (apiKey != Environment.GetEnvironmentVariable("CatalogueAPIKey",EnvironmentVariableTarget.Process))
                 {
                     var response = new CatalogueResponse
                     {

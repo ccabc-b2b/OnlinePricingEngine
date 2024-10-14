@@ -32,7 +32,7 @@ namespace GCCB_OPE_FA_API.Functions
             {
                 var apiKey = req.Headers["x-api-key"];
 
-                if (apiKey != Environment.GetEnvironmentVariable("OrderPricingAPIKey"))
+                if (apiKey != Environment.GetEnvironmentVariable("OrderPricingAPIKey", EnvironmentVariableTarget.Process))
                 {
                     var response = new OrderPricingResponse
                     {
