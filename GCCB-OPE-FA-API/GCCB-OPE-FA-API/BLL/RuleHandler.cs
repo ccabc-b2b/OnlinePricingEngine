@@ -164,10 +164,12 @@ namespace GCCB_OPE_FA_API.BLL
             var pricingDetails = new PricingDetails();
             if (promotions.Count > 0)
             {
+                int val1;
+                int val2;
                 filteredPromotion = promotions.Where(x =>
                 x.MinQty != null && x.MinQty != Constants.DefaultQuantity && x.MaxQty != null && x.MaxQty != Constants.DefaultQuantity ||
                 x.AgreementValidFromDate.HasValue && x.AgreementValidToDate.HasValue &&
-                item.Quantity >= Convert.ToInt32(x.MinQty) && item.Quantity <= Convert.ToInt32(x.MaxQty) || //check promotion slab
+                item.Quantity >= (int.TryParse(x.MinQty.Trim() ,out val1 )?val1:0) && item.Quantity <= (int.TryParse(x.MinQty.Trim(), out val2) ? val2 : 0) || //check promotion slab
                 deliveryDate >= x.AgreementValidFromDate && deliveryDate <= x.AgreementValidToDate).ToList(); //promotion with delivery date
 
                 ////Filter promotions with delivery date
