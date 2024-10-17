@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.Eventing.Reader;
 
 namespace GCCB_OPE_FA_API.BLL
 {
@@ -24,9 +25,20 @@ namespace GCCB_OPE_FA_API.BLL
                     foreach (DataColumn col in dt.Columns)
                     {
                         var property = obj.GetType().GetProperty(col.ColumnName);
-                        if (property != null && row[col] != DBNull.Value)
+
+                        if (property != null && row[col] != DBNull.Value )
                         {
-                            object value = Convert.ChangeType(row[col], property.PropertyType);
+                            if (property.PropertyType.UnderlyingSystemType.FullName.ToString().IndexOf("System.DateTime") > 0)
+                                {
+                                object value = Convert.ChangeType(row[col], typeof(DateTime));
+                                }
+                            else
+                                {
+                                object value = Convert.ChangeType(row[col], property.PropertyType);
+                                }
+                            
+                            
+                            
                             property.SetValue(obj, row[col]);
                         }
                     }
