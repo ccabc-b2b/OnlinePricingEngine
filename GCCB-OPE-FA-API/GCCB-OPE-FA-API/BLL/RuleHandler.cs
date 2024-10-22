@@ -168,8 +168,7 @@ namespace GCCB_OPE_FA_API.BLL
                 x.MinQty != null && x.MinQty != Constants.DefaultQuantity && x.MaxQty != null && x.MaxQty != Constants.DefaultQuantity ||
                 x.AgreementValidFromDate.HasValue && x.AgreementValidToDate.HasValue &&
                 item.Quantity >= Convert.ToInt32(x.MinQty) && item.Quantity <= Convert.ToInt32(x.MaxQty) || //check promotion slab
-                deliveryDate >= x.AgreementValidFromDate && deliveryDate <= x.AgreementValidToDate ||
-                (x.MaxQty == null || x.MaxQty == Constants.DefaultQuantity) && item.Quantity > Convert.ToInt32(x.MinQty)).ToList(); //promotion with delivery date
+                deliveryDate >= x.AgreementValidFromDate && deliveryDate <= x.AgreementValidToDate).ToList(); //promotion with delivery date
 
                 ////Filter promotions with delivery date
                 //promotions = promotions.Where(x => x.AgreementValidFromDate.HasValue
