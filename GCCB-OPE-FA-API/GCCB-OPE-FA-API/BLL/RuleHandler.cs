@@ -166,11 +166,14 @@ namespace GCCB_OPE_FA_API.BLL
             {
                 int val1;
                 int val2;
+                int val3;
                 filteredPromotion = promotions.Where(x =>
-                x.MinQty != null && x.MinQty != Constants.DefaultQuantity && x.MaxQty != null && x.MaxQty != Constants.DefaultQuantity ||
-                x.AgreementValidFromDate.HasValue && x.AgreementValidToDate.HasValue &&
-                item.Quantity >= (int.TryParse(x.MinQty.Trim() ,out val1 )?val1:0) && item.Quantity <= (int.TryParse(x.MinQty.Trim(), out val2) ? val2 : 0) || //check promotion slab
-                deliveryDate >= x.AgreementValidFromDate && deliveryDate <= x.AgreementValidToDate).ToList(); //promotion with delivery date
+                    (x.MinQty != null && x.MinQty != Constants.DefaultQuantity && x.MaxQty != null && x.MaxQty != Constants.DefaultQuantity ||
+                    x.AgreementValidFromDate.HasValue && x.AgreementValidToDate.HasValue &&
+                    item.Quantity >= (int.TryParse(x.MinQty.Trim(), out val1) ? val1 : 0) && item.Quantity <= (int.TryParse(x.MaxQty.Trim(), out val2) ? val2 : 0) || // check promotion slab
+                    deliveryDate >= x.AgreementValidFromDate && deliveryDate <= x.AgreementValidToDate) ||
+                    (x.MaxQty == null || x.MaxQty == Constants.DefaultQuantity) && item.Quantity > (int.TryParse(x.MinQty.Trim(), out val3) ? val3 : 0) // new condition
+                ).ToList();
 
                 ////Filter promotions with delivery date
                 //promotions = promotions.Where(x => x.AgreementValidFromDate.HasValue
@@ -183,7 +186,7 @@ namespace GCCB_OPE_FA_API.BLL
                 //&& x.MaxQty != null && x.MaxQty != Constants.DefaultQuantity &&
                 //item.Quantity >= Convert.ToInt32(x.MinQty) && item.Quantity <= Convert.ToInt32(x.MaxQty)).ToList();
 
-            }
+                }
             List<string> appliedPromotions = filteredPromotion?.Select(x => x.PromotionID).ToList();
             pricingDetails.promotionsApplied = appliedPromotions;
             if (filteredPromotion.Count > 0)
