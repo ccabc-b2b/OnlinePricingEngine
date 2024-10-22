@@ -19,7 +19,7 @@ namespace GCCB_OPE_FA_API
         public override void Configure(IFunctionsHostBuilder builder)
         {
             ConfigurationBuilder _builder = new ConfigurationBuilder();
-            _builder.AddAzureKeyVault(new Uri(Environment.GetEnvironmentVariable("KeyVaultURI_1")), new DefaultAzureCredential());
+            _builder.AddAzureKeyVault(new Uri(Environment.GetEnvironmentVariable("KeyVaultURI")), new DefaultAzureCredential());
             IConfiguration configuration = _builder.Build();
 
             builder.Services.AddLogging();
