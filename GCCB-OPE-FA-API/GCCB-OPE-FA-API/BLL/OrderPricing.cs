@@ -195,6 +195,9 @@ namespace GCCB_OPE_FA_API.BLL
                 pricingDetails.isFreeGoods = promo.isFreeGoods;
                 pricingDetails.promotionsApplied = promo.promotionsApplied;
             }
+            pricingDetails.Discount =+ pricingDetails.Rewards;
+            pricingDetails.NetPrice =- pricingDetails.Rewards;
+            pricingDetails.TotalPrice =- pricingDetails.Rewards;
             return pricingDetails;
         }
         public PricingDetails ApplyPromotion(OrderPricingRequest orderPricingRequest, List<Promotion> promotions, Item item)
