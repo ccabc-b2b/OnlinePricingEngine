@@ -160,17 +160,11 @@ namespace GCCB_OPE_FA_API.BLL
         public PricingDetails CheckPromotionRule(OrderPricingRequest orderPricingRequest, List<Promotion> promotions, Item item)
             {
             DateTime deliveryDate = Convert.ToDateTime(orderPricingRequest.DeliveryDate);
-            List<Promotion> filteredPromotion = new List<Promotion>();
-            List<Promotion> PromotionType1 = new List<Promotion>();
-            List<Promotion> PromotionType2 = new List<Promotion>();
-            List<Promotion> PromotionType3 = new List<Promotion>();
+            List<Promotion> filteredPromotion = new List<Promotion>();          
             var pricingDetails = new PricingDetails();
             if (promotions.Count > 0)
                 {
-                float val1;
-                float val2;
-                int val3;
-
+                float val1;               
                 filteredPromotion = promotions.Where(x =>
                     ((x.MinQty != null && x.MinQty != Constants.DefaultQuantity) &&
                     (x.AgreementValidFromDate.HasValue && x.AgreementValidToDate.HasValue) &&
