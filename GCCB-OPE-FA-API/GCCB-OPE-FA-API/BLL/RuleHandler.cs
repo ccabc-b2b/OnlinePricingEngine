@@ -158,42 +158,40 @@ namespace GCCB_OPE_FA_API.BLL
             return lstPricingMatrix;
         }
         public PricingDetails CheckPromotionRule(OrderPricingRequest orderPricingRequest, List<Promotion> promotions, Item item)
-        {
+            {
             DateTime deliveryDate = Convert.ToDateTime(orderPricingRequest.DeliveryDate);
             List<Promotion> filteredPromotion = new List<Promotion>();
+            List<Promotion> PromotionType1 = new List<Promotion>();
+            List<Promotion> PromotionType2 = new List<Promotion>();
+            List<Promotion> PromotionType3 = new List<Promotion>();
             var pricingDetails = new PricingDetails();
             if (promotions.Count > 0)
-            {
-                int val1;
-                int val2;
+                {
+                float val1;
+                float val2;
                 int val3;
+
                 filteredPromotion = promotions.Where(x =>
-                    (x.MinQty != null && x.MinQty != Constants.DefaultQuantity && x.MaxQty != null && x.MaxQty != Constants.DefaultQuantity ||
-                    x.AgreementValidFromDate.HasValue && x.AgreementValidToDate.HasValue &&
-                    item.Quantity >= (int.TryParse(x.MinQty.Trim(), out val1) ? val1 : 0) && item.Quantity <= (int.TryParse(x.MaxQty.Trim(), out val2) ? val2 : 0) || // check promotion slab
-                    deliveryDate >= x.AgreementValidFromDate && deliveryDate <= x.AgreementValidToDate) ||
-                    (x.MaxQty == null || x.MaxQty == Constants.DefaultQuantity) && item.Quantity > (int.TryParse(x.MinQty.Trim(), out val3) ? val3 : 0) // new condition
+                    ((x.MinQty != null && x.MinQty != Constants.DefaultQuantity) &&
+                    (x.AgreementValidFromDate.HasValue && x.AgreementValidToDate.HasValue) &&
+                    item.Quantity >= (float.TryParse(x.MinQty.Trim(), out val1) ? val1 : 0) &&
+                    item.Quantity <= (float.Parse(((x.MaxQty == null || x.MaxQty.Trim().Equals("") || x.MaxQty == Constants.DefaultQuantity) ? int.MaxValue.ToString() : x.MaxQty).Trim())) &&   // check promotion slab
+                    deliveryDate >= x.AgreementValidFromDate && deliveryDate <= x.AgreementValidToDate) //||
+                                                                                                        //(x.MaxQty == null || x.MaxQty == Constants.DefaultQuantity) && item.Quantity > (int.TryParse(x.MinQty.Trim(), out val3) ? val3 : 0) // new condition
                 ).ToList();
-
-                ////Filter promotions with delivery date
-                //promotions = promotions.Where(x => x.AgreementValidFromDate.HasValue
-                //&& x.AgreementValidToDate.HasValue && deliveryDate >= x.AgreementValidFromDate
-                //&& deliveryDate <= x.AgreementValidToDate).ToList();
-
-                ////Check promtion slab
-                //promotions.OrderByDescending(x => x.MaxQty);
-                //promotions.Where(x => x.MinQty != null && x.MinQty != Constants.DefaultQuantity
-                //&& x.MaxQty != null && x.MaxQty != Constants.DefaultQuantity &&
-                //item.Quantity >= Convert.ToInt32(x.MinQty) && item.Quantity <= Convert.ToInt32(x.MaxQty)).ToList();
-
                 }
-            List<string> appliedPromotions = filteredPromotion?.Select(x => x.PromotionID).ToList();
-            pricingDetails.promotionsApplied = appliedPromotions;
-            if (filteredPromotion.Count > 0)
-                pricingDetails.Rewards = filteredPromotion.Select(x => string.IsNullOrEmpty(x.RewardValue) ? "0" : x.RewardValue)
-                    .Select(decimal.Parse).Max();
-            pricingDetails.isFreeGoods = filteredPromotion.Any(x => x.PromotionType.Equals(((int)Enumerators.PromotionType.FOC).ToString()));
+
+                float rewardValue = filteredPromotion.GroupBy(p => p.PromotionType).Select(p => new { PromotionType = p.Key, reward = p.Max(q => float.Parse(q.RewardValue)) }).ToList().Sum(T => T.reward);
+
+                pricingDetails.Rewards = Convert.ToDecimal(rewardValue);
+                
+
+                pricingDetails.isFreeGoods = filteredPromotion.Any(x => x.PromotionType.Equals(((int)Enumerators.PromotionType.FOC).ToString()));
+                
+                
+                
             return pricingDetails;
-        }
+
+            }
     }
 }
