@@ -178,6 +178,7 @@ namespace GCCB_OPE_FA_API.BLL
                 float rewardValue = filteredPromotion.GroupBy(p => p.PromotionType).Select(p => new { PromotionType = p.Key, reward = p.Max(q => float.Parse(q.RewardValue)) }).ToList().Sum(T => T.reward);
 
                 pricingDetails.Rewards = Convert.ToDecimal(rewardValue);
+                pricingDetails.promotionsApplied = filteredPromotion.Select(x => x.PromotionType).Distinct().ToList();
                 
 
                 pricingDetails.isFreeGoods = filteredPromotion.Any(x => x.PromotionType.Equals(((int)Enumerators.PromotionType.FOC).ToString()));
