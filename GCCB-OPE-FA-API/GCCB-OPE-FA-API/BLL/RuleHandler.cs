@@ -164,21 +164,22 @@ namespace GCCB_OPE_FA_API.BLL
             var pricingDetails = new PricingDetails();
             if (promotions.Count > 0)
                 {
-                float val1;               
+                float val1;
                 filteredPromotion = promotions.Where(x =>
                     ((x.MinQty != null && x.MinQty != Constants.DefaultQuantity) &&
                     (x.AgreementValidFromDate.HasValue && x.AgreementValidToDate.HasValue) &&
                     item.Quantity >= (float.TryParse(x.MinQty.Trim(), out val1) ? val1 : 0) &&
-                    item.Quantity <= (float.Parse(((x.MaxQty == null || x.MaxQty.Trim().Equals("") || x.MaxQty == Constants.DefaultQuantity) ? int.MaxValue.ToString() : x.MaxQty).Trim())) &&   // check promotion slab
+                   // item.Quantity <= (float.TryParse(x.MaxQty.Trim(), out val1) ? val1 : 0) &&
+                     item.Quantity <= (float.Parse(((x.MaxQty == null || x.MaxQty.Trim().Equals("") || x.MaxQty == Constants.DefaultQuantity) ? int.MaxValue.ToString() : x.MaxQty).Trim())) &&   // check promotion slab
                     deliveryDate >= x.AgreementValidFromDate && deliveryDate <= x.AgreementValidToDate) //||
                                                                                                         //(x.MaxQty == null || x.MaxQty == Constants.DefaultQuantity) && item.Quantity > (int.TryParse(x.MinQty.Trim(), out val3) ? val3 : 0) // new condition
                 ).ToList();
                 }
 
-                float rewardValue = filteredPromotion.GroupBy(p => p.PromotionType).Select(p => new { PromotionType = p.Key, reward = p.Max(q => float.Parse(q.RewardValue)) }).ToList().Sum(T => T.reward);
+            float rewardValue = filteredPromotion.GroupBy(p => p.PromotionType).Select(p => new { PromotionType = p.Key, reward = p.Max(q => float.Parse(q.RewardValue)) }).ToList().Sum(T => T.reward);
 
                 pricingDetails.Rewards = Convert.ToDecimal(rewardValue);
-                pricingDetails.promotionsApplied = filteredPromotion.Select(x => x.PromotionType).Distinct().ToList();
+                pricingDetails.promotionsApplied = filteredPromotion.Select(x => x.PromotionID).Distinct().ToList();
                 
 
                 pricingDetails.isFreeGoods = filteredPromotion.Any(x => x.PromotionType.Equals(((int)Enumerators.PromotionType.FOC).ToString()));
