@@ -28,5 +28,13 @@ namespace GCCB_OPE_FA_API.DataManagers.Models
         public string RewardQty { get; set; }
         public string RewardValue { get; set; }
         public string RewardPercentage { get; set; }
+        public int isSlab { get; set; }
+        public string FromQTY { get; set; }
+        public string ToQTY { get; set; }
+        public DateTime? ActiveFrom { get; set; }
+        public DateTime? ActiveTo { get; set; }
+        public string DiscountType { get; set; }
+        public string FreeGoodQTY { get; set; }
+
+        }
     }
-}

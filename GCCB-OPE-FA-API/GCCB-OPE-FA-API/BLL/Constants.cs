@@ -13,6 +13,7 @@ public static class Constants
     };
     public const string SuccessMessage = "Data listed successfully!";
     public const string InvalidApiKey = "Invalid API Key";
+    public const string InvalidDeliveryDate = "Invalid Delivery Date , does not accept null or empty value";
     public const string ErrorMessage = "An error occurred while processing the request.";
     public const string AED = "AED";
     public const string OMR = "OMR";
