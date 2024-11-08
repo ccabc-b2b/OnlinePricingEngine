@@ -46,6 +46,15 @@ namespace GCCB_OPE_FA_API.Functions
                     //var check = _cacheManager.KeyExists("key");
                     string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                     var orderPricingRequest = JsonConvert.DeserializeObject<OrderPricingRequest>(requestBody);
+                    if (String.IsNullOrEmpty(orderPricingRequest.DeliveryDate))
+                    {
+                        var _response = new OrderPricingResponse
+                            {
+                            Status = (int)HttpStatusCode.BadRequest,
+                            Message = Constants.InvalidDeliveryDate
+                            };
+                        return new UnauthorizedObjectResult(_response);
+                        }
                     log.LogInformation($"{Util.GetMarketCode(orderPricingRequest.Currency)} :OrderPrice function processed a request.");
                     log.LogInformation($"{Util.GetMarketCode(orderPricingRequest.Currency)} :Request Payload {JsonConvert.SerializeObject(orderPricingRequest)}");
                     var response = _orderPricing.ProcessOrderPricing(orderPricingRequest);
