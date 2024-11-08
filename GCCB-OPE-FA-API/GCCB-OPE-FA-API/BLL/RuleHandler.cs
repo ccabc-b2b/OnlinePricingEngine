@@ -173,7 +173,7 @@ namespace GCCB_OPE_FA_API.BLL
                     (x.ActiveFrom.HasValue && x.ActiveTo.HasValue) &&
                     Quantity >= (float.TryParse(x.FromQTY.Trim(), out val1) ? val1 : 0) &&
                     Quantity <= (float.Parse(((x.ToQTY == null || x.ToQTY.Trim().Equals("") || x.ToQTY == Constants.DefaultQuantity) ? int.MaxValue.ToString() : x.ToQTY).Trim())) &&   // check promotion slab
-                    deliveryDate >= x.ActiveFrom && deliveryDate <= x.ActiveTo) && (x.isSlab==1)//|| //(x.MaxQty == null || x.MaxQty == Constants.DefaultQuantity) && item.Quantity > (int.TryParse(x.MinQty.Trim(), out val3) ? val3 : 0) // new condition
+                    deliveryDate >= x.ActiveFrom && deliveryDate <= x.ActiveTo) && (x.IsSlab==1)//|| //(x.MaxQty == null || x.MaxQty == Constants.DefaultQuantity) && item.Quantity > (int.TryParse(x.MinQty.Trim(), out val3) ? val3 : 0) // new condition
                 ).ToList();
 
                 float val2;
@@ -182,7 +182,7 @@ namespace GCCB_OPE_FA_API.BLL
                     (x.AgreementValidFromDate.HasValue && x.AgreementValidToDate.HasValue) &&
                     Quantity >= (float.TryParse(x.MinQty.Trim(), out val2) ? val2 : 0) &&
                     Quantity <= (float.Parse(((x.MaxQty == null || x.MaxQty.Trim().Equals("") || x.MaxQty == Constants.DefaultQuantity) ? int.MaxValue.ToString() : x.MaxQty).Trim())) &&   // check promotion slab
-                    deliveryDate >= x.AgreementValidFromDate && deliveryDate <= x.AgreementValidToDate)&&(x.isSlab==0) // || //(x.MaxQty == null || x.MaxQty == Constants.DefaultQuantity) && item.Quantity > (int.TryParse(x.MinQty.Trim(), out val3) ? val3 : 0) // new condition
+                    deliveryDate >= x.AgreementValidFromDate && deliveryDate <= x.AgreementValidToDate)&&(x.IsSlab==0) // || //(x.MaxQty == null || x.MaxQty == Constants.DefaultQuantity) && item.Quantity > (int.TryParse(x.MinQty.Trim(), out val3) ? val3 : 0) // new condition
                 ).ToList();
                 }
             filteredPromotion.AddRange(filteredPromotion_slab);

@@ -42,26 +42,24 @@ namespace GCCB_OPE_FA_API.BLL
             {
                 new SqlParameter("@MaterialNumber",string.Join(",", orderPricingRequest.Items.Select(x => x.ProductId).ToList()))
             };
-            var materialGrps = Util.DataTabletoList<MaterialGroup>(_connectionManager.ExecuteStoredProcedure("MaterialGroupFetch", materialParameter));
+            var materialGrps = Util.DataTabletoList<MaterialGroups>(_connectionManager.ExecuteStoredProcedure("MaterialGroupFetch", materialGroupParameter));
 
-            foreach (var item in orderPricingRequest.Items)
-            {
-                foreach (var material in materialGrps)
-                    {
-                    if (!String.IsNullOrEmpty(material.MaterialGroup_ID))
-                        {
-                        if (material.MaterialNumber == item.ProductId)
-                            {
-                            material.Quantity = item.Quantity;
-                            }
-                        }
-                    else
-                        {
-                        materialGrps.Remove(material);
-                        }
-                    }
-            }
+            var filteredMaterialGrps = materialGrps
+             .Where(mg => !string.IsNullOrEmpty(mg.MaterialGroup))
+             .ToList();
 
+            // Step 2: Update the Quantity from the Item object
+            var updatedMaterialGrps = filteredMaterialGrps
+                .Select(mg =>
+                {
+                    var item = orderPricingRequest.Items.FirstOrDefault(i => i.ProductId == mg.MaterialNumber);
+                    if (item != null)
+                        {
+                        mg.Quantity = item.Quantity;
+                        }
+                    return mg;
+                })
+                .ToList();
 
             var response = new OrderPricingResponse();
 
@@ -69,7 +67,7 @@ namespace GCCB_OPE_FA_API.BLL
             response.Message = Constants.SuccessMessage;
             var result = new Result();
             result.SyncDate = DateTime.Now;//Todo        
-            result.PricingDetails = CalculatePricePromo(orderPricingRequest, customer, materials,materialGrps);
+            result.PricingDetails = CalculatePricePromo(orderPricingRequest, customer, materials,updatedMaterialGrps);
             result.SubTotalPrice = result.PricingDetails.Sum(x => x.SubTotalPrice * x.quantity);
             result.Rewards = result.PricingDetails.Sum(x => x.Rewards * x.quantity);
             result.Discount = result.PricingDetails.Sum(x => x.Discount * x.quantity);
@@ -83,7 +81,7 @@ namespace GCCB_OPE_FA_API.BLL
             return response;
         }
 
-        public List<PricingDetails> CalculatePricePromo(OrderPricingRequest orderPricingRequest, Customer customer, List<Material> Materials,List<MaterialGroup> materialGroups)
+        public List<PricingDetails> CalculatePricePromo(OrderPricingRequest orderPricingRequest, Customer customer, List<Material> Materials,List<MaterialGroups> materialGroups)
         {
             List<PricingDetails> lstPricingDetails = new List<PricingDetails>();
             List<PromotionUtil> promotionsApplied=new List<PromotionUtil>();
@@ -119,8 +117,11 @@ namespace GCCB_OPE_FA_API.BLL
                     promotionsApplied.AddRange(promoapplieditemlevel);
                 }
             }
+            if (materialGroups.Count()>0)
+            {
             var promoappliedgrouplevel = ApplyPromotiontMaterialGroupLevel(orderPricingRequest, promotions, materialGroups);
             promotionsApplied.AddRange(promoappliedgrouplevel);
+            }
 
             var bestRewards = promotionsApplied
             .GroupBy(p => new { p.MaterialNumber, p.PromotionType })
@@ -153,7 +154,7 @@ namespace GCCB_OPE_FA_API.BLL
                 }
             return lstPricingDetails;
         }
-        public PricingDetails CalculatePricing(OrderPricingRequest orderPricingRequest, Item item, Customer customer, List<ConditionItems> conditionItems, List<PricingMatrix> keyMappings, List<Promotion> promotions, List<MaterialGroup>materialGroups)
+        public PricingDetails CalculatePricing(OrderPricingRequest orderPricingRequest, Item item, Customer customer, List<ConditionItems> conditionItems, List<PricingMatrix> keyMappings, List<Promotion> promotions, List<MaterialGroups>materialGroups)
         {
             var pricingDetails = new PricingDetails();
             pricingDetails.product = Convert.ToInt32(item.ProductId);
@@ -273,20 +274,20 @@ namespace GCCB_OPE_FA_API.BLL
                                      MaterialGroup_ID = maxRewardPromotion.MaterialGroupID,
                                      Quantity = item.Quantity,
                                      CashDiscount = float.Parse(maxRewardPromotion.RewardValue),
-                                     FreeGoodQty = (maxRewardPromotion.isSlab == 1) ? maxRewardPromotion.FreeGoodQTY : maxRewardPromotion.RewardQty,
+                                     FreeGoodQty = (maxRewardPromotion.IsSlab == 1 && string.IsNullOrEmpty(maxRewardPromotion.FreeGoodQTY)) ? maxRewardPromotion.FreeGoodQTY : maxRewardPromotion.RewardQty,
                                      PromotionType = maxRewardPromotion.PromotionType,
                                      };
                              }
                              ).ToList();
             return promotionsapplied;
         }
-        public List<PromotionUtil> ApplyPromotiontMaterialGroupLevel(OrderPricingRequest orderPricingRequest, List<Promotion> promotions,List<MaterialGroup>materialGroups)
+        public List<PromotionUtil> ApplyPromotiontMaterialGroupLevel(OrderPricingRequest orderPricingRequest, List<Promotion> promotions,List<MaterialGroups>materialGroups)
         {
             var promotionsapplied = new List<PromotionUtil>();
-            var promo = new List<Promotion>();
+            var filteredpromotions = new List<Promotion>();
             RuleHandler ruleHandler = new RuleHandler();
             var groupedMaterials = materialGroups
-                                .GroupBy(m => m.MaterialGroup_ID)
+                                .GroupBy(m => m.MaterialGroup)
                                 .Select(g => new
                                     {
                                     Group = g.Key,
@@ -297,19 +298,22 @@ namespace GCCB_OPE_FA_API.BLL
 
             foreach (var materialgroup in groupedMaterials)
                 {
-                if (materialgroup.TotalQuantity>1)
+                var materialPromo = new List<Promotion>();
+                if (materialgroup.Materials.Count() > 1)
                     {
                     foreach (var item in materialgroup.Materials)
                         {
-                            var applicablePromotions = promotions
-                            .Where(p => p.MaterialGroupID == materialgroup.Group && p.MaterialNumber==item)
-                            .ToList();
+                        var applicablePromotions = promotions
+                        .Where(p => p.MaterialGroupID == materialgroup.Group && p.MaterialNumber == item)
+                        .ToList();
 
-                        promo.AddRange(applicablePromotions);
+                        materialPromo.AddRange(applicablePromotions);
                         }
                     }
-                var filteredpromotions=ruleHandler.CheckPromotionRule(orderPricingRequest, promo, materialgroup.TotalQuantity);
 
+                var filteredmaterialpromotions = ruleHandler.CheckPromotionRule(orderPricingRequest, materialPromo, materialgroup.TotalQuantity);
+                filteredpromotions.AddRange(filteredmaterialpromotions);
+                }
                 //var validPromotions = filteredpromotions
                 //                    .GroupBy(p => p.PromotionID)
                 //                    .Where(g => g.Count() % materialgroup.Materials.Count == 0)
@@ -333,14 +337,14 @@ namespace GCCB_OPE_FA_API.BLL
                                             PromotionID=p.PromotionID,
                                             MaterialNumber = p.MaterialNumber,
                                             MaterialGroup_ID = p.MaterialGroupID,
-                                            Quantity = materialGroups.Where(m=> m.MaterialNumber==p.MaterialNumber && m.MaterialGroup_ID==p.MaterialGroupID).Select(m=>m.Quantity).First(),
+                                            Quantity = materialGroups.Where(m=> m.MaterialNumber==p.MaterialNumber && m.MaterialGroup==p.MaterialGroupID).Select(m=>m.Quantity).First(),
                                             CashDiscount = maxRewardValue,
-                                            FreeGoodQty = (p.isSlab == 1) ? p.FreeGoodQTY : p.RewardQty,
+                                            FreeGoodQty = (p.IsSlab == 1) ? p.FreeGoodQTY: p.RewardQty,
                                             PromotionType = p.PromotionType,
                                             });
                                     })
                                     .ToList();
-                }
+
             return promotionsapplied;
         }
 
