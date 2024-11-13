@@ -23,7 +23,8 @@ namespace GCCB_OPE_FA_API.DataManagers.Models
         public string RequirementQty { get; set; }
         public string RequirementValue { get; set; }
         public string MaterialNumber { get; set; }
-        public string MaterialGroupID { get; set; }
+        public string RequirementMaterialGroupID { get; set; }
+        public string RewardMaterialGroupID { get; set; }
         public string PromoRewardID { get; set; }
         public string RewardQty { get; set; }
         public string RewardValue { get; set; }

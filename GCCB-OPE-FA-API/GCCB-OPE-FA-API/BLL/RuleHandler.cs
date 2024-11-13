@@ -157,27 +157,18 @@ namespace GCCB_OPE_FA_API.BLL
             }
             return lstPricingMatrix;
         }
-        public List<Promotion> CheckPromotionRule(OrderPricingRequest orderPricingRequest, List<Promotion> promotions,int Quantity)
+        public List<Promotion> CheckPromotionRuleAtItemLevel(OrderPricingRequest orderPricingRequest, List<Promotion> promotions,int Quantity)
             {
             DateTime deliveryDate = Convert.ToDateTime(orderPricingRequest.DeliveryDate);
             List<Promotion> filteredPromotion_nonslab = new List<Promotion>();
-            List<Promotion> filteredPromotion_slab = new List<Promotion>();
             List<Promotion> filteredPromotion = new List<Promotion>();
 
             var pricingDetails = new PricingDetails();
             if (promotions.Count > 0)
                 {
-                float val1;
-                filteredPromotion_nonslab = promotions.Where(x =>
-                    ((x.FromQTY != null && x.FromQTY != Constants.DefaultQuantity) &&
-                    (x.ActiveFrom.HasValue && x.ActiveTo.HasValue) &&
-                    Quantity >= (float.TryParse(x.FromQTY.Trim(), out val1) ? val1 : 0) &&
-                    Quantity <= (float.Parse(((x.ToQTY == null || x.ToQTY.Trim().Equals("") || x.ToQTY == Constants.DefaultQuantity) ? int.MaxValue.ToString() : x.ToQTY).Trim())) &&   // check promotion slab
-                    deliveryDate >= x.ActiveFrom && deliveryDate <= x.ActiveTo) && (x.IsSlab==1)//|| //(x.MaxQty == null || x.MaxQty == Constants.DefaultQuantity) && item.Quantity > (int.TryParse(x.MinQty.Trim(), out val3) ? val3 : 0) // new condition
-                ).ToList();
 
                 float val2;
-                filteredPromotion_slab = promotions.Where(x =>
+                filteredPromotion_nonslab = promotions.Where(x =>
                     ((x.MinQty != null && x.MinQty != Constants.DefaultQuantity) &&
                     (x.AgreementValidFromDate.HasValue && x.AgreementValidToDate.HasValue) &&
                     Quantity >= (float.TryParse(x.MinQty.Trim(), out val2) ? val2 : 0) &&
@@ -185,19 +176,35 @@ namespace GCCB_OPE_FA_API.BLL
                     deliveryDate >= x.AgreementValidFromDate && deliveryDate <= x.AgreementValidToDate)&&(x.IsSlab==0) // || //(x.MaxQty == null || x.MaxQty == Constants.DefaultQuantity) && item.Quantity > (int.TryParse(x.MinQty.Trim(), out val3) ? val3 : 0) // new condition
                 ).ToList();
                 }
-            filteredPromotion.AddRange(filteredPromotion_slab);
             filteredPromotion.AddRange(filteredPromotion_nonslab);
 
-            
-
-                //pricingDetails.Rewards = Convert.ToDecimal(rewardValue);
-                //pricingDetails.promotionsApplied = filteredPromotion.Select(x => x.PromotionID).Distinct().ToList();
-                
-
-                //pricingDetails.isFreeGoods = filteredPromotion.Any(x => x.PromotionType.Equals(((int)Enumerators.PromotionType.FOC).ToString()));
-                //
             return filteredPromotion;
 
             }
-    }
+        public List<Promotion> CheckPromotionRuleAtGroupLevel(OrderPricingRequest orderPricingRequest, List<Promotion> promotions, int Quantity)
+            {
+
+            DateTime deliveryDate = Convert.ToDateTime(orderPricingRequest.DeliveryDate);
+            List<Promotion> filteredPromotion_slab = new List<Promotion>();
+            List<Promotion> filteredPromotion = new List<Promotion>();
+
+            var pricingDetails = new PricingDetails();
+            if (promotions.Count > 0)
+                {
+                float val1;
+                filteredPromotion_slab = promotions.Where(x =>
+                    ((x.FromQTY != null && x.FromQTY != Constants.DefaultQuantity) &&
+                    (x.ActiveFrom.HasValue && x.ActiveTo.HasValue) &&
+                    Quantity >= (float.TryParse(x.FromQTY.Trim(), out val1) ? val1 : 0) &&
+                    Quantity <= (float.Parse(((x.ToQTY == null || x.ToQTY.Trim().Equals("") || x.ToQTY == Constants.DefaultQuantity) ? int.MaxValue.ToString() : x.ToQTY).Trim())) &&   // check promotion slab
+                    deliveryDate >= x.ActiveFrom && deliveryDate <= x.ActiveTo) && (x.IsSlab == 1)//|| //(x.MaxQty == null || x.MaxQty == Constants.DefaultQuantity) && item.Quantity > (int.TryParse(x.MinQty.Trim(), out val3) ? val3 : 0) // new condition
+                ).ToList();
+
+                }
+            filteredPromotion.AddRange(filteredPromotion_slab);
+
+            return filteredPromotion;
+
+            }
+        }
 }
