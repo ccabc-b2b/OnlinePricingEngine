@@ -338,7 +338,7 @@ namespace GCCB_OPE_FA_API.BLL
                                                 PromotionID = p.PromotionID,
                                                 MaterialNumber = item,
                                                 MaterialGroup_ID = p.RequirementMaterialGroupID,
-                                                Quantity = materialGroups.Where(m => m.MaterialNumber == p.MaterialNumber && m.MaterialGroup == p.RequirementMaterialGroupID).Select(m => m.Quantity).First(),
+                                                Quantity = materialGroups.Where(m => m.MaterialNumber == p.MaterialNumber && m.MaterialGroup == p.RequirementMaterialGroupID).Select(m => m.Quantity).FirstOrDefault(),
                                                 CashDiscount = maxRewardValue,
                                                 FreeGoodQty = (p.IsSlab == 1) ? p.FreeGoodQTY : p.RewardQty,
                                                 PromotionType = p.PromotionType,
