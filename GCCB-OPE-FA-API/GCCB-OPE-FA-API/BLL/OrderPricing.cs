@@ -306,8 +306,6 @@ namespace GCCB_OPE_FA_API.BLL
                                     })
                                 .ToList();
 
-           
-
                 foreach (var materialgroup in groupedMaterials)
                 {
                 List<Promotion> applicablePromotions = new List<Promotion>();
@@ -317,14 +315,11 @@ namespace GCCB_OPE_FA_API.BLL
                     .Where(p => p.RequirementMaterialGroupID == materialgroup.Group && materialgroup.GroupType[0].Equals("REQ"))            
                     .ToList();          
                     }
-
-                foreach(var x in groupedMaterials)
-                    {
-                      applicablePromotions = promotions
-                     .Where(p => p.RewardMaterialGroupID == materialgroup.Group && materialgroup.GroupType[0].Equals("REW"))
-                     .ToList();
-                    }
-
+         
+                applicablePromotions = promotions
+                .Where(p => p.RewardMaterialGroupID == materialgroup.Group && materialgroup.GroupType[0].Equals("REW"))
+                .ToList();
+ 
                 filteredpromotions = ruleHandler.CheckPromotionRuleAtGroupLevel(orderPricingRequest, applicablePromotions, materialgroup.TotalQuantity);
 
                 var maxRewardValues = filteredpromotions
