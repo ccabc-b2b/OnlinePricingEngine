@@ -328,7 +328,7 @@ namespace GCCB_OPE_FA_API.BLL
 
                 foreach (var item in materialgroup.Materials)
                     { 
-                    promotionsapplied = filteredpromotions
+                    promotionsapplied.AddRange(filteredpromotions
                                         .GroupBy(p => new { p.PromotionType, p.RewardMaterialGroupID })
                                         .SelectMany(g =>
                                         {
@@ -337,14 +337,14 @@ namespace GCCB_OPE_FA_API.BLL
                                                 {
                                                 PromotionID = p.PromotionID,
                                                 MaterialNumber = item,
-                                                MaterialGroup_ID = p.RequirementMaterialGroupID,
-                                                Quantity = materialGroups.Where(m => m.MaterialNumber == p.MaterialNumber && m.MaterialGroup == p.RequirementMaterialGroupID).Select(m => m.Quantity).FirstOrDefault(),
+                                                MaterialGroup_ID = p.RewardMaterialGroupID,
+                                                Quantity = materialGroups.Where(m => m.MaterialNumber == p.MaterialNumber && m.MaterialGroup == p.RewardMaterialGroupID).Select(m => m.Quantity).FirstOrDefault(),
                                                 CashDiscount = maxRewardValue,
                                                 FreeGoodQty = (p.IsSlab == 1) ? p.FreeGoodQTY : p.RewardQty,
                                                 PromotionType = p.PromotionType,
                                                 });
                                         })
-                                        .ToList();
+                                        .ToList());
                     }
                 }
 
