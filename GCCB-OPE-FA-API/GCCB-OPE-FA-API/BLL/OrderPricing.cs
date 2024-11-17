@@ -295,7 +295,8 @@ namespace GCCB_OPE_FA_API.BLL
             };
             var promotions = Util.DataTabletoList<Promotion>(_connectionManager.ExecuteStoredProcedure("ItemPromotionGroup", parameter));
 
-            var groupedMaterials = materialGroups                                                          
+            var material_REQ_Group = materialGroups   
+                                .Where(m=>m.GroupType=="REQ")
                                 .GroupBy(m => m.MaterialGroup)
                                 .Select(g => new
                                     {
@@ -306,7 +307,17 @@ namespace GCCB_OPE_FA_API.BLL
                                     })
                                 .ToList();
 
-                foreach (var materialgroup in groupedMaterials)
+            var material_RWD_Group = materialGroups
+                                    .Where(m => m.GroupType == "REW")
+                                    .GroupBy(m => m.MaterialGroup)
+                                    .Select(g => new
+                                        {
+                                        Group = g.Key,
+                                        Materials = g.Select(m => m.MaterialNumber).ToList(),
+                                        })
+                                    .ToList();
+
+                foreach (var materialgroup in material_REQ_Group)
                 {
                 List<Promotion> applicablePromotions = new List<Promotion>();
                 if (materialgroup.Materials.Count() > 1)
@@ -315,15 +326,16 @@ namespace GCCB_OPE_FA_API.BLL
                     .Where(p => p.RequirementMaterialGroupID == materialgroup.Group && materialgroup.GroupType[0].Equals("REQ"))            
                     .ToList();          
                     }
-         
-                applicablePromotions = promotions
-                .Where(p => p.RewardMaterialGroupID == materialgroup.Group && materialgroup.GroupType[0].Equals("REW"))
-                .ToList();
- 
+
                 filteredpromotions = ruleHandler.CheckPromotionRuleAtGroupLevel(orderPricingRequest, applicablePromotions, materialgroup.TotalQuantity);
 
+                filteredpromotions = filteredpromotions
+                .Where(p => p.RequirementMaterialGroupID == materialgroup.Group)
+                .ToList();
+ 
+
                 var maxRewardValues = filteredpromotions
-                                    .GroupBy(p => new { p.PromotionType,p.RewardMaterialGroupID})
+                                    .GroupBy(p => new { p.PromotionType})
                                     .ToDictionary(
                                         g => g.Key,
                                         g => g.Max(p => float.Parse(p.RewardValue))
@@ -332,7 +344,7 @@ namespace GCCB_OPE_FA_API.BLL
                 foreach (var item in materialgroup.Materials)
                     { 
                     promotionsapplied.AddRange(filteredpromotions
-                                        .GroupBy(p => new { p.PromotionType, p.RewardMaterialGroupID  })
+                                        .GroupBy(p => new { p.PromotionType})
                                         .SelectMany(g =>
                                         {
                                             var maxRewardValue = maxRewardValues[g.Key];

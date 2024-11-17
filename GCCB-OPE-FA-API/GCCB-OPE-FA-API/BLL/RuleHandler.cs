@@ -166,7 +166,6 @@ namespace GCCB_OPE_FA_API.BLL
             var pricingDetails = new PricingDetails();
             if (promotions.Count > 0)
                 {
-
                 float val2;
                 filteredPromotion_nonslab = promotions.Where(x =>
                     ((x.MinQty != null && x.MinQty != Constants.DefaultQuantity) &&
