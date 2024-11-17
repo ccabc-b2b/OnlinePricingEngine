@@ -4,6 +4,7 @@
         {
         public string MaterialNumber { get; set; }
         public string MaterialGroup { get; set; }
+        public string GroupType { get; set; } 
         public int  Quantity { get; set; }
         }
     }
