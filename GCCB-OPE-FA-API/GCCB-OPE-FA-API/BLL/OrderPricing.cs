@@ -151,10 +151,7 @@ namespace GCCB_OPE_FA_API.BLL
                         item.promotionsApplied = reward.PromotionIds;
                         item.Discount += item.Rewards;
                         item.NetPrice -= item.Rewards;
-
-                        var MWST = (customer.TaxClassification.Equals("1") ? 5 * item.NetPrice / 100 : 0);
-                        var total = item.NetPrice + MWST;
-                        item.TotalPrice = total;
+                        item.TotalPrice -= item.Rewards;
                         }
                     }
                 }
@@ -178,12 +175,13 @@ namespace GCCB_OPE_FA_API.BLL
                 var netValue = netofEDLP - rules.Select(x => x.YPDN).FirstOrDefault() - rules.Select(x => x.YPN2).FirstOrDefault();
                 //var consumerPromotion = YAC1 + YAC4 + YAC2 + YAC3 + YAC5 + YAC6;
                 //totaltax Mwst = 5 % of Netvalue
-               
+                MWST = (customer.TaxClassification.Equals("1") ? 5 * netValue / 100 : 0);
+                var total = netValue + MWST;
 
                 pricingDetails.SubTotalPrice = grossValue;
                 pricingDetails.Discount = totalTradeDiscount;
                 pricingDetails.NetPrice = netValue;
-                //pricingDetails.TotalPrice = total;
+                pricingDetails.TotalPrice = total;
                 pricingDetails.TotalTax = MWST;
                 }
 
