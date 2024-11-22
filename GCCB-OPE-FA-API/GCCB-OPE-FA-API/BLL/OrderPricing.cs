@@ -145,11 +145,15 @@ namespace GCCB_OPE_FA_API.BLL
                         item.Rewards = Convert.ToDecimal(reward.TotalRewardValue);
                         item.isFreeGoods = false;
                         item.promotionsApplied = reward.PromotionIds;
-                        item.Discount += item.Rewards;
-                        item.NetPrice -= item.Rewards;
-                        item.TotalPrice -= item.Rewards;
+                        item.Discount += item.Rewards;                     
+                        item.NetPrice -= item.Rewards;                    
+                        item.TotalPrice = item.NetPrice ;
+                        var vat = (customer.TaxClassification.Equals("1") ? 5 * item.TotalPrice / 100 : 0);
+                        item.TotalTax = vat;
+                        item.TotalPrice += item.TotalTax;
                         }
                     }
+                
                 }
             return lstPricingDetails;
             }
