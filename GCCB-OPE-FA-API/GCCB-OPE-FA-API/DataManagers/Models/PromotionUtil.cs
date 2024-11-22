@@ -5,6 +5,7 @@
         public string PromotionID { get; set; }
         public string MaterialNumber { get; set; }
         public string MaterialGroup_ID { get; set; }
+        public string MaterialRewGrp {  get; set; }
         public int Quantity { get; set; }
         public float CashDiscount { get; set; }
         public string FreeGoodQty { get; set; }
