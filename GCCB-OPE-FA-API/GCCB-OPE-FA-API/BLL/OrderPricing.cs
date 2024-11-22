@@ -1,20 +1,16 @@
 ﻿using GCCB_OPE_FA_API.BLL.Models;
 using GCCB_OPE_FA_API.DataManagers;
 using GCCB_OPE_FA_API.DataManagers.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography;
 
 namespace GCCB_OPE_FA_API.BLL
-{
+    {
     public class OrderPricing
         {
         private readonly ILogger _logger;
@@ -328,7 +324,7 @@ namespace GCCB_OPE_FA_API.BLL
             foreach (var materialgroup in material_REQ_Group)
                 {
                 List<Promotion> applicablePromotions = new List<Promotion>();
-                if (materialgroup.Materials.Count() > 1)
+                if (materialgroup.Materials.Count() >= 1)
                     {
                     applicablePromotions = promotions
                    .Where(p => p.RequirementMaterialGroupID == materialgroup.Group)
@@ -353,7 +349,8 @@ namespace GCCB_OPE_FA_API.BLL
                                         PromotionID = promotion.PromotionID,
                                         MaterialNumber = material,
                                         MaterialGroup_ID = promotion.RequirementMaterialGroupID,
-                                        Quantity = materialQuantityList.Where(m=>m.ProductId==material).Select(m=>m.Quantity).FirstOrDefault(),
+                                        MaterialRewGrp=promotion.RewardMaterialGroupID,
+                                        Quantity = materialQuantityList.Where(m => m.ProductId == material).Select(m => m.Quantity).FirstOrDefault(),
                                         CashDiscount = float.Parse(promotion.RewardValue),
                                         FreeGoodQty = (promotion.IsSlab == 1) ? promotion.FreeGoodQTY : promotion.RewardQty,
                                         PromotionType = promotion.PromotionType,
@@ -370,19 +367,19 @@ namespace GCCB_OPE_FA_API.BLL
             }
 
         private List<PricingMatrix> VariableKeyMapping(Customer customer, Material material, string country)
-        {
+            {
             var parameter = new SqlParameter[] {
                 new SqlParameter("@Country",country)
             };
             List<PricingMatrix> lstPricingMatrix = Util.DataTabletoList<PricingMatrix>(_connectionManager.ExecuteStoredProcedure("PricingMatrixFetch", parameter));
             foreach (var pricingMatrix in lstPricingMatrix)
-            {
+                {
                 var variableKey = "";
                 List<string> splitKeys = pricingMatrix.VariableKeyFetch.Split('+').ToList();
                 foreach (var splitKey in splitKeys)
-                {
-                    switch (splitKey)
                     {
+                    switch (splitKey)
+                        {
                         case Constants.Customer:
                             variableKey += (customer.CustomerNumber != null) ? customer.CustomerNumber.PadRight(Util.CharLengthMapping(Constants.Customer), ' ') : "";
                             //variableKey += "0000005000";
@@ -426,12 +423,12 @@ namespace GCCB_OPE_FA_API.BLL
                             break;
                         default:
                             break;
+                        }
                     }
-                }
                 pricingMatrix.VariableKeyValue = variableKey;
-            }
+                }
             //var lst1 = lst.Distinct().ToList();
             return lstPricingMatrix;
+            }
         }
     }
-}
