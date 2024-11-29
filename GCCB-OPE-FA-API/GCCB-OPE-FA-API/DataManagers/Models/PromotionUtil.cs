@@ -7,8 +7,8 @@
         public string MaterialGroup_ID { get; set; }
         public string MaterialRewGrp {  get; set; }
         public int Quantity { get; set; }
-        public float CashDiscount { get; set; }
-        public string FreeGoodQty { get; set; }
+        public decimal CashDiscount { get; set; }
+        public bool IsFreeGoodQty { get; set; }
         public string PromotionType { get; set;}
         }
     }
