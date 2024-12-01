@@ -71,7 +71,7 @@ namespace GCCB_OPE_FA_API.BLL
             result.PricingDetails = CalculatePricePromo(orderPricingRequest, customer, materials, updatedMaterialGrps);
             result.SubTotalPrice = result.PricingDetails.Sum(x => x.SubTotalPrice * x.quantity);
             result.Rewards = result.PricingDetails.Sum(x => x.Rewards * x.quantity);
-            result.Discount = result.PricingDetails.Sum(x => x.Discount * x.quantity);
+            result.Discount = result.PricingDetails.Sum(x =>x.Discount * x.quantity);
             result.NetPrice = result.PricingDetails.Sum(x => x.NetPrice * x.quantity);
             result.TotalPrice = result.PricingDetails.Sum(x => x.TotalPrice * x.quantity);
             result.TotalTax = result.PricingDetails.Sum(x => x.TotalTax * x.quantity);
@@ -154,6 +154,7 @@ namespace GCCB_OPE_FA_API.BLL
             .Select(g => new
                 {
                 MaterialNumber = g.Key,
+                FreeGoodQty = g.Max(p=>p.FreeGoodQty),
                 TotalRewardValue = g.Sum(p => p.CashDiscount),
                 PromotionIds = g.Select(p => p.PromotionID).ToList()
                 })
@@ -174,6 +175,8 @@ namespace GCCB_OPE_FA_API.BLL
                         item.TotalTax = vat;
                         item.TotalPrice += item.TotalTax;
                         item.isFreeGoods = (item.TotalPrice)==0 ?true:false;
+                        item.quantity -= reward.FreeGoodQty;
+                        item.freegoodqty = reward.FreeGoodQty;
                         }
                     }
 
@@ -491,6 +494,10 @@ namespace GCCB_OPE_FA_API.BLL
 
             foreach (var materialgroup in material_REQ_Group)
                 {
+                if (materialgroup.Group== "0000003136")
+                    {
+                    var a = 1;
+                    }
                 List<Promotion> applicablePromotions = new List<Promotion>();
                 if (materialgroup.Materials.Count() >= 1)
                     {
@@ -501,14 +508,7 @@ namespace GCCB_OPE_FA_API.BLL
 
                 var filteredpromotions = ruleHandler.CheckFOCPromotionRuleAtGroupLevel(orderPricingRequest, applicablePromotions, materialgroup.TotalQuantity);
 
-                //var materialsNotInGroup = materialQuantityList
-                //                        .Where(mq => !materialgroup.Materials.Contains(mq.ProductId))
-                //                        .Select(mq => mq.ProductId)
-                //                        .ToList();
-                //foreach (var rewgrp in material_RWD_Group)
-                //    {
-                //    if (rewgrp.Materials.Contains(material))
-                //        {
+                
 
                 foreach (var promotion in filteredpromotions)
                     {
@@ -529,9 +529,48 @@ namespace GCCB_OPE_FA_API.BLL
 
                         decimal cashdiscount = 0;
                         bool freegoodqty =false;
-                        if ((!string.IsNullOrEmpty(promotion.FreeGoodQTY) || promotion.FreeGoodQTY != Constants.DefaultQuantity) && decimal.Parse(promotion.FreeGoodQTY) == decimal.Parse(totalQuantity.ToString()))
+                        if (filteredMaterials[0] == materialgroup.Materials[0])//reward material==req material grp
                             {
-                            foreach (var material in commonProductsWithQuantity.Select(x=>x.ProductId).ToList())
+                            foreach (var material in commonProductsWithQuantity.Select(x => x.ProductId).ToList())
+                                {
+                                if (decimal.Parse(promotion.FromQTY) + decimal.Parse(promotion.FreeGoodQTY) == decimal.Parse(totalQuantity.ToString()))//freegoodqty+from qty ==total quantity
+                                    {
+                                    var quantity = Convert.ToInt32(decimal.Parse(promotion.FreeGoodQTY));
+                                    //cashdiscount = materialPricingList.Where(p => p.ProductId == material).Select(p => p.Pricing).FirstOrDefault();
+                                    freegoodqty = true;
+
+                                    var promotionapplied = new PromotionUtil
+                                        {
+                                        PromotionID = promotion.PromotionID,
+                                        MaterialNumber = material,
+                                        MaterialGroup_ID = promotion.RequirementMaterialGroupID,
+                                        MaterialRewGrp = promotion.RewardMaterialGroupID,
+                                        Quantity = totalQuantity-quantity,
+                                        CashDiscount = 0,
+                                        IsFreeGoodQty = freegoodqty,
+                                        PromotionType = promotion.PromotionType,
+                                        FreeGoodQty = quantity
+                                        };
+                                    promotionsapplied.Add(promotionapplied);
+
+
+
+                                    foreach (var item in materialgroup.Materials)
+                                        {
+                                        foreach (var orderitem in _orderpricingRequest.Items)
+                                            {
+                                            if (item == orderitem.ProductId)
+                                                {
+                                                orderitem.isFreeGood = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        else if ((!string.IsNullOrEmpty(promotion.FreeGoodQTY) || promotion.FreeGoodQTY != Constants.DefaultQuantity) && decimal.Parse(promotion.FreeGoodQTY) == decimal.Parse(totalQuantity.ToString()))
+                            {
+                            foreach (var material in commonProductsWithQuantity.Select(x => x.ProductId).ToList())
                                 {
                                 var quantity = materialQuantityList.Where(m => m.ProductId == material).Select(m => m.Quantity).FirstOrDefault();
                                 cashdiscount = materialPricingList.Where(p => p.ProductId == material).Select(p => p.Pricing).FirstOrDefault();
@@ -551,7 +590,7 @@ namespace GCCB_OPE_FA_API.BLL
 
                                 foreach (var item in _orderpricingRequest.Items)
                                     {
-                                     if (item.ProductId==material)
+                                    if (item.ProductId == material)
                                         {
                                         item.isFreeGood = true;
                                         }
@@ -561,7 +600,7 @@ namespace GCCB_OPE_FA_API.BLL
                                 {
                                 foreach (var orderitem in _orderpricingRequest.Items)
                                     {
-                                        if(item==orderitem.ProductId)
+                                    if (item == orderitem.ProductId)
                                         {
                                         orderitem.isFreeGood = true;
                                         }

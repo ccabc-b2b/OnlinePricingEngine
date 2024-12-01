@@ -209,23 +209,26 @@ namespace GCCB_OPE_FA_API.BLL
             {
 
             DateTime deliveryDate = Convert.ToDateTime(orderPricingRequest.DeliveryDate);
-            List<Promotion> filteredPromotion_slab = new List<Promotion>();
+            //List<Promotion> filteredPromotion_slab = new List<Promotion>();
             List<Promotion> filteredPromotion = new List<Promotion>();
 
             var pricingDetails = new PricingDetails();
             if (promotions.Count > 0)
                 {
                 decimal val1;
-                filteredPromotion_slab = promotions.Where(x =>
+                var filteredPromotion_slab = promotions.Where(x =>
                     ((x.FromQTY != null && x.FromQTY != Constants.DefaultQuantity) &&
                     (x.ActiveFrom.HasValue && x.ActiveTo.HasValue) &&
-                    decimal.Parse(Quantity.ToString()) == (decimal.TryParse(x.FromQTY.Trim(), out val1) ? val1 : 0) &&
+                    decimal.Parse(Quantity.ToString()) >= (decimal.TryParse(x.FromQTY.Trim(), out val1) ? val1 : 0) &&
                     deliveryDate >= x.ActiveFrom && deliveryDate <= x.ActiveTo) && (x.IsSlab == 1)//|| //(x.MaxQty == null || x.MaxQty == Constants.DefaultQuantity) && item.Quantity > (int.TryParse(x.MinQty.Trim(), out val3) ? val3 : 0) // new condition
-                ).ToList();
+                ).OrderByDescending(x=>decimal.Parse(x.FromQTY)).FirstOrDefault();
 
+                if (filteredPromotion_slab!=null && filteredPromotion_slab.PromotionID != null)
+                    {
+                    filteredPromotion.Add(filteredPromotion_slab);
+                    }
                 }
-            filteredPromotion.AddRange(filteredPromotion_slab);
-
+           
             return filteredPromotion;
 
             }

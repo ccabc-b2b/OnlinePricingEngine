@@ -34,6 +34,7 @@ namespace GCCB_OPE_FA_API.BLL.Models
         public decimal NetPrice { get; set; }
         public decimal TotalPrice { get; set; }
         public decimal TotalTax { get; set; }
+        public int freegoodqty { get; set; }
         public List<string> promotionsApplied { get; set; }
         public List<PricingComponent> PricingComponents { get; set; }
 
