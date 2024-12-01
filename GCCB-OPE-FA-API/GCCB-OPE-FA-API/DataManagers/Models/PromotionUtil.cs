@@ -10,7 +10,6 @@
         public decimal CashDiscount { get; set; }
         public bool IsFreeGoodQty { get; set; }
         public string PromotionType { get; set;}
-
-        // add freegoodqty int 
+        public int FreeGoodQty { get; set; }// add freegoodqty int 
         }
     }
