@@ -24,5 +24,6 @@ namespace GCCB_OPE_FA_API.BLL.Models
         [Required, NotNull]
         public int Quantity { get; set; }
         public bool isFreeGood { get; set; }
+        public int FreeGoodQty  { get; set; }
     }
 }

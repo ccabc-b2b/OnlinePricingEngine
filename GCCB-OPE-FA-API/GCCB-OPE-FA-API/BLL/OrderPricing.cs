@@ -154,6 +154,7 @@ namespace GCCB_OPE_FA_API.BLL
             .Select(g => new
                 {
                 MaterialNumber = g.Key,
+                //freegoodqty =g.max(p.freegoodqty),
                 TotalRewardValue = g.Sum(p => p.CashDiscount),
                 PromotionIds = g.Select(p => p.PromotionID).ToList()
                 })
@@ -174,6 +175,7 @@ namespace GCCB_OPE_FA_API.BLL
                         item.TotalTax = vat;
                         item.TotalPrice += item.TotalTax;
                         item.isFreeGoods = (item.TotalPrice)==0 ?true:false;
+                        //item.freegoodqty = reward.freegoodqty
                         }
                     }
 
@@ -529,9 +531,41 @@ namespace GCCB_OPE_FA_API.BLL
 
                         decimal cashdiscount = 0;
                         bool freegoodqty =false;
-                        if ((!string.IsNullOrEmpty(promotion.FreeGoodQTY) || promotion.FreeGoodQTY != Constants.DefaultQuantity) && decimal.Parse(promotion.FreeGoodQTY) == decimal.Parse(totalQuantity.ToString()))
+                        if (true)//reward material==req material grp
                             {
-                            foreach (var material in commonProductsWithQuantity.Select(x=>x.ProductId).ToList())
+                            if (true)//freegoodqty+from qty ==total quantity
+                                {
+                                //var promotionapplied = new PromotionUtil
+                                //    {
+                                //    PromotionID = promotion.PromotionID,
+                                //    MaterialNumber = material,
+                                //    MaterialGroup_ID = promotion.RequirementMaterialGroupID,
+                                //    MaterialRewGrp = promotion.RewardMaterialGroupID,
+                                //    Quantity = quantity,
+                                //    CashDiscount = cashdiscount,
+                                //    IsFreeGoodQty = freegoodqty,
+                                //    PromotionType = promotion.PromotionType,
+                                //    };
+                                //promotionsapplied.Add(promotionapplied);
+
+
+
+                                //foreach (var item in materialgroup.Materials)
+                                //    {
+                                //    foreach (var orderitem in _orderpricingRequest.Items)
+                                //        {
+                                //        if (item == orderitem.ProductId)
+                                //            {
+                                //            orderitem.isFreeGood = true;
+                                //orderitem.freegoodqty=promotion.freegoodqty
+                                //            }
+                                //        }
+                                //    }
+                                }
+                            }
+                        else if ((!string.IsNullOrEmpty(promotion.FreeGoodQTY) || promotion.FreeGoodQTY != Constants.DefaultQuantity) && decimal.Parse(promotion.FreeGoodQTY) == decimal.Parse(totalQuantity.ToString()))
+                            {
+                            foreach (var material in commonProductsWithQuantity.Select(x => x.ProductId).ToList())
                                 {
                                 var quantity = materialQuantityList.Where(m => m.ProductId == material).Select(m => m.Quantity).FirstOrDefault();
                                 cashdiscount = materialPricingList.Where(p => p.ProductId == material).Select(p => p.Pricing).FirstOrDefault();
@@ -551,7 +585,7 @@ namespace GCCB_OPE_FA_API.BLL
 
                                 foreach (var item in _orderpricingRequest.Items)
                                     {
-                                     if (item.ProductId==material)
+                                    if (item.ProductId == material)
                                         {
                                         item.isFreeGood = true;
                                         }
@@ -561,7 +595,7 @@ namespace GCCB_OPE_FA_API.BLL
                                 {
                                 foreach (var orderitem in _orderpricingRequest.Items)
                                     {
-                                        if(item==orderitem.ProductId)
+                                    if (item == orderitem.ProductId)
                                         {
                                         orderitem.isFreeGood = true;
                                         }
