@@ -70,8 +70,8 @@ namespace GCCB_OPE_FA_API.BLL
             result.SyncDate = DateTime.Now;//Todo        
             result.PricingDetails = CalculatePricePromo(orderPricingRequest, customer, materials, updatedMaterialGrps);
             result.SubTotalPrice = result.PricingDetails.Sum(x => x.SubTotalPrice * x.quantity);
-            result.Rewards = result.PricingDetails.Sum(x => x.Rewards * x.quantity);
-            result.Discount = result.PricingDetails.Sum(x =>x.Discount * x.quantity);
+            result.Rewards = result.PricingDetails.Sum(x => x.Rewards * (x.freegoodqty>0?x.freegoodqty:x.quantity));
+            result.Discount = result.PricingDetails.Sum(x =>x.Discount * (x.freegoodqty > 0 ? x.freegoodqty : x.quantity));
             result.NetPrice = result.PricingDetails.Sum(x => x.NetPrice * x.quantity);
             result.TotalPrice = result.PricingDetails.Sum(x => x.TotalPrice * x.quantity);
             result.TotalTax = result.PricingDetails.Sum(x => x.TotalTax * x.quantity);
@@ -167,16 +167,19 @@ namespace GCCB_OPE_FA_API.BLL
                     if (item.product.ToString() == reward.MaterialNumber)
                         {
                         item.Rewards = Convert.ToDecimal(reward.TotalRewardValue);
+                        item.freegoodqty = reward.FreeGoodQty;
                         item.promotionsApplied = reward.PromotionIds;
                         item.Discount += item.Rewards;
-                        item.NetPrice -= item.Rewards;
+                        if (item.freegoodqty==0)
+                            {
+                            item.NetPrice -= item.Rewards;
+                            }
                         item.TotalPrice = item.NetPrice;
                         var vat = (customer.TaxClassification.Equals("1") ? 5 * item.TotalPrice / 100 : 0);
                         item.TotalTax = vat;
                         item.TotalPrice += item.TotalTax;
                         item.isFreeGoods = (item.TotalPrice)==0 ?true:false;
                         item.quantity -= reward.FreeGoodQty;
-                        item.freegoodqty = reward.FreeGoodQty;
                         }
                     }
 
@@ -494,10 +497,6 @@ namespace GCCB_OPE_FA_API.BLL
 
             foreach (var materialgroup in material_REQ_Group)
                 {
-                if (materialgroup.Group== "0000003136")
-                    {
-                    var a = 1;
-                    }
                 List<Promotion> applicablePromotions = new List<Promotion>();
                 if (materialgroup.Materials.Count() >= 1)
                     {
@@ -536,7 +535,7 @@ namespace GCCB_OPE_FA_API.BLL
                                 if (decimal.Parse(promotion.FromQTY) + decimal.Parse(promotion.FreeGoodQTY) == decimal.Parse(totalQuantity.ToString()))//freegoodqty+from qty ==total quantity
                                     {
                                     var quantity = Convert.ToInt32(decimal.Parse(promotion.FreeGoodQTY));
-                                    //cashdiscount = materialPricingList.Where(p => p.ProductId == material).Select(p => p.Pricing).FirstOrDefault();
+                                    cashdiscount = materialPricingList.Where(p => p.ProductId == material).Select(p => p.Pricing).FirstOrDefault();
                                     freegoodqty = true;
 
                                     var promotionapplied = new PromotionUtil
@@ -546,7 +545,7 @@ namespace GCCB_OPE_FA_API.BLL
                                         MaterialGroup_ID = promotion.RequirementMaterialGroupID,
                                         MaterialRewGrp = promotion.RewardMaterialGroupID,
                                         Quantity = totalQuantity-quantity,
-                                        CashDiscount = 0,
+                                        CashDiscount = cashdiscount,
                                         IsFreeGoodQty = freegoodqty,
                                         PromotionType = promotion.PromotionType,
                                         FreeGoodQty = quantity
