@@ -140,8 +140,8 @@ namespace GCCB_OPE_FA_API.BLL
 
             foreach (var item in _orderpricingRequest.Items.Where(x=>x.isFreeGood==false).ToList())
                 {
-                var promoapplieditemlevel = ApplyPromotiontItemLevel(orderPricingRequest, promotions, item);
-                //promoapplieditemlevel.AddRange(ApplyFOCPromotiontItemLevel(orderPricingRequest, promotions, lstPricingDetails, item));
+                var baseprice = lstPricingDetails.Where(x => x.product.ToString() == item.ProductId).Select(x => x.SubTotalPrice).FirstOrDefault();
+                var promoapplieditemlevel = ApplyPromotiontItemLevel(orderPricingRequest, promotions, item,baseprice);
                 promotionsApplied.AddRange(promoapplieditemlevel);
                 }
 
@@ -287,7 +287,7 @@ namespace GCCB_OPE_FA_API.BLL
             pricingDetails.PricingComponents = lstPricingComponents;
             return pricingDetails;
             }
-        public List<PromotionUtil> ApplyPromotiontItemLevel(OrderPricingRequest orderPricingRequest, List<Promotion> promotions, Item item)
+        public List<PromotionUtil> ApplyPromotiontItemLevel(OrderPricingRequest orderPricingRequest, List<Promotion> promotions, Item item,decimal baseprice)
             {
             var filteredpromotions = new List<Promotion>();
             var promotionsapplied = new List<PromotionUtil>();
@@ -300,6 +300,9 @@ namespace GCCB_OPE_FA_API.BLL
                              .Select(g =>
                              {
                                  var maxRewardPromotion = g.OrderByDescending(p => float.Parse(p.RewardValue)).First();
+                                 var cashDiscount = !string.IsNullOrEmpty(maxRewardPromotion.RewardPercentage) && maxRewardPromotion.RewardPercentage != Constants.DefaultRewardPercentage
+                                                    ? decimal.Parse(maxRewardPromotion.RewardPercentage)*baseprice/100
+                                                    : decimal.Parse(maxRewardPromotion.RewardValue);
                                  return new PromotionUtil
                                      {
                                      PromotionID = maxRewardPromotion.PromotionID,
@@ -312,47 +315,6 @@ namespace GCCB_OPE_FA_API.BLL
                              }
                              ).ToList();
 
-            return promotionsapplied;
-            }
-        public List<PromotionUtil> ApplyFOCPromotiontItemLevel(OrderPricingRequest orderPricingRequest, List<Promotion> promotions, List<PricingDetails> lstPricingDetails, Item item)
-            {
-            var filteredpromotions = new List<Promotion>();
-            var promotionsapplied = new List<PromotionUtil>();
-            RuleHandler ruleHandler = new RuleHandler();
-
-            var materialPricingList = new List<(string ProductId, decimal Pricing)>();
-
-            foreach (var pricingDetails in lstPricingDetails)
-                {
-                materialPricingList.Add((pricingDetails.product.ToString(), pricingDetails.SubTotalPrice));
-                }
-
-            foreach (var product in orderPricingRequest.Items)
-                {
-                if (product != item)
-                    {
-                    promotions = promotions.Where(x => x.MaterialNumber.Equals(product.ProductId)).ToList();
-
-                    filteredpromotions = ruleHandler.CheckPromotionRuleAtItemLevel(orderPricingRequest, promotions, product.Quantity);
-                    promotionsapplied = filteredpromotions
-                                     .Where(p => (!string.IsNullOrEmpty(p.RewardQty) || p.RewardQty != Constants.DefaultQuantity) && product.Quantity == int.Parse(p.RewardQty))
-                                     .GroupBy(p => p.PromotionType)
-                                     .Select(g =>
-                                     {
-                                         var maxRewardPromotion = g.OrderByDescending(p => float.Parse(p.RewardQty)).First();
-                                         return new PromotionUtil
-                                             {
-                                             PromotionID = maxRewardPromotion.PromotionID,
-                                             MaterialNumber = maxRewardPromotion.MaterialNumber,
-                                             MaterialGroup_ID = maxRewardPromotion.RewardMaterialGroupID,
-                                             Quantity = product.Quantity,
-                                             CashDiscount = materialPricingList.Where(p => p.ProductId == maxRewardPromotion.MaterialNumber).Select(p => p.Pricing).FirstOrDefault(),
-                                             PromotionType = maxRewardPromotion.PromotionType,
-                                             };
-                                     }
-                                     ).ToList();
-                    }
-                }
             return promotionsapplied;
             }
         public List<PromotionUtil> ApplyPromotiontMaterialGroupLevel(OrderPricingRequest orderPricingRequest, List<MaterialGroups> materialGroups, List<PricingDetails> lstPricingDetails)
@@ -426,17 +388,34 @@ namespace GCCB_OPE_FA_API.BLL
                                 {
                                 if (promotion.RewardMaterialGroupID == rewgrp.Group)
                                     {
-                                    var promotionapplied = new PromotionUtil
+                                    if (!string.IsNullOrEmpty(promotion.RewardPercentage)||promotion.RewardPercentage!=Constants.DefaultRewardPercentage)
                                         {
-                                        PromotionID = promotion.PromotionID,
-                                        MaterialNumber = material,
-                                        MaterialGroup_ID = promotion.RequirementMaterialGroupID,
-                                        MaterialRewGrp = promotion.RewardMaterialGroupID,
-                                        Quantity = materialQuantityList.Where(m => m.ProductId == material).Select(m => m.Quantity).FirstOrDefault(),
-                                        CashDiscount = decimal.Parse(promotion.RewardValue),
-                                        PromotionType = promotion.PromotionType,
-                                        };
-                                    promotionsapplied.Add(promotionapplied);
+                                        var promotionapplied = new PromotionUtil
+                                            {
+                                            PromotionID = promotion.PromotionID,
+                                            MaterialNumber = material,
+                                            MaterialGroup_ID = promotion.RequirementMaterialGroupID,
+                                            MaterialRewGrp = promotion.RewardMaterialGroupID,
+                                            Quantity = materialQuantityList.Where(m => m.ProductId == material).Select(m => m.Quantity).FirstOrDefault(),
+                                            CashDiscount = decimal.Parse(promotion.RewardPercentage)*(materialPricingList.Where(x=>x.ProductId==material).Select(x=>x.Pricing).FirstOrDefault())/100,//decimal.Parse(promotion.RewardValue),
+                                            PromotionType = promotion.PromotionType,
+                                            };
+                                        promotionsapplied.Add(promotionapplied);
+                                        }
+                                    else if (!string.IsNullOrEmpty(promotion.RewardValue) || promotion.RewardValue != Constants.DefaultRewardValue)
+                                        {
+                                        var promotionapplied = new PromotionUtil
+                                            {
+                                            PromotionID = promotion.PromotionID,
+                                            MaterialNumber = material,
+                                            MaterialGroup_ID = promotion.RequirementMaterialGroupID,
+                                            MaterialRewGrp = promotion.RewardMaterialGroupID,
+                                            Quantity = materialQuantityList.Where(m => m.ProductId == material).Select(m => m.Quantity).FirstOrDefault(),
+                                            CashDiscount = decimal.Parse(promotion.RewardValue),
+                                            PromotionType = promotion.PromotionType,
+                                            };
+                                        promotionsapplied.Add(promotionapplied);
+                                        }
                                     }
                                 }
                             }
