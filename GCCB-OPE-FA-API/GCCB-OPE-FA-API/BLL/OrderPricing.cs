@@ -301,7 +301,7 @@ namespace GCCB_OPE_FA_API.BLL
                              {
                                  var maxRewardPromotion = g.OrderByDescending(p => float.Parse(p.RewardValue)).First();
                                  var cashDiscount = !string.IsNullOrEmpty(maxRewardPromotion.RewardPercentage) && maxRewardPromotion.RewardPercentage != Constants.DefaultRewardPercentage
-                                                    ? decimal.Parse(maxRewardPromotion.RewardPercentage)*baseprice/100
+                                                    ? Math.Round(decimal.Parse(maxRewardPromotion.RewardPercentage)*baseprice/100,2)
                                                     : decimal.Parse(maxRewardPromotion.RewardValue);
                                  return new PromotionUtil
                                      {
@@ -309,7 +309,7 @@ namespace GCCB_OPE_FA_API.BLL
                                      MaterialNumber = maxRewardPromotion.MaterialNumber,
                                      MaterialGroup_ID = maxRewardPromotion.RewardMaterialGroupID,
                                      Quantity = item.Quantity,
-                                     CashDiscount = decimal.Parse(maxRewardPromotion.RewardValue),
+                                     CashDiscount = cashDiscount,
                                      PromotionType = maxRewardPromotion.PromotionType,
                                      };
                              }
