@@ -388,7 +388,7 @@ namespace GCCB_OPE_FA_API.BLL
                                 {
                                 if (promotion.RewardMaterialGroupID == rewgrp.Group)
                                     {
-                                    if (!string.IsNullOrEmpty(promotion.RewardPercentage)||promotion.RewardPercentage!=Constants.DefaultRewardPercentage)
+                                    if (!string.IsNullOrEmpty(promotion.RewardPercentage)&&promotion.RewardPercentage!=Constants.DefaultRewardPercentage)
                                         {
                                         var promotionapplied = new PromotionUtil
                                             {
@@ -402,7 +402,7 @@ namespace GCCB_OPE_FA_API.BLL
                                             };
                                         promotionsapplied.Add(promotionapplied);
                                         }
-                                    else if (!string.IsNullOrEmpty(promotion.RewardValue) || promotion.RewardValue != Constants.DefaultRewardValue)
+                                    else if (!string.IsNullOrEmpty(promotion.RewardValue) && promotion.RewardValue != Constants.DefaultRewardValue)
                                         {
                                         var promotionapplied = new PromotionUtil
                                             {
