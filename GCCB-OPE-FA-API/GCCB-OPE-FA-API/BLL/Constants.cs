@@ -34,6 +34,8 @@ public static class Constants
     public const string POType = "POType";
     public const string SubTradeChannel = "SubTradeChannel";
     public const string DefaultQuantity = "0.000";
+    public const string DefaultRewardPercentage = "0.0000";
+    public const string DefaultRewardValue = "0.00";
     public static Dictionary<string, Func<string, bool>> ConditionTableRule = new()
     {
         {
