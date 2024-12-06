@@ -15,7 +15,7 @@ namespace GCCB_OPE_FA_API.BLL
         {
         private readonly ILogger _logger;
         private readonly ConnectionManager _connectionManager;
-        public static OrderPricingRequest _orderpricingRequest;
+        public  OrderPricingRequest _orderpricingRequest;
         public OrderPricing(ILogger<OrderPricing> logger, ConnectionManager connectionManager)
             {
             _logger = logger;
@@ -141,7 +141,7 @@ namespace GCCB_OPE_FA_API.BLL
             foreach (var item in _orderpricingRequest.Items.Where(x=>x.isFreeGood==false).ToList())
                 {
                 var baseprice = lstPricingDetails.Where(x => x.product.ToString() == item.ProductId).Select(x => x.SubTotalPrice).FirstOrDefault();
-                var promoapplieditemlevel = ApplyPromotiontItemLevel(orderPricingRequest, promotions, item,baseprice);
+                var promoapplieditemlevel = ApplyPromotiontItemLevel(_orderpricingRequest, promotions, item,baseprice);
                 promotionsApplied.AddRange(promoapplieditemlevel);
                 }
 
