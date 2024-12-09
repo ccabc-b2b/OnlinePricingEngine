@@ -6,6 +6,7 @@ using GCCB_OPE_FA_API.DataManagers;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Reflection;
@@ -21,6 +22,10 @@ namespace GCCB_OPE_FA_API
             ConfigurationBuilder _builder = new ConfigurationBuilder();
             _builder.AddAzureKeyVault(new Uri(Environment.GetEnvironmentVariable("KeyVaultURI")), new DefaultAzureCredential());
             IConfiguration configuration = _builder.Build();
+
+            builder.Services.AddHealthChecks()
+            .AddCheck("Sample Health Check", () => HealthCheckResult.Healthy("The check indicates a healthy state."));
+
 
             builder.Services.AddLogging();
             // builder.Services.AddHttpClient();
