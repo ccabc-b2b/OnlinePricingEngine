@@ -8,6 +8,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace GCCB_OPE_FA_API.BLL
     {
@@ -15,11 +16,12 @@ namespace GCCB_OPE_FA_API.BLL
         {
         private readonly ILogger _logger;
         private readonly ConnectionManager _connectionManager;
-        public  OrderPricingRequest _orderpricingRequest;
+        public OrderPricingRequest _orderpricingRequest;
+        private readonly Connection connection;
         public OrderPricing(ILogger<OrderPricing> logger, ConnectionManager connectionManager)
             {
             _logger = logger;
-            _connectionManager = connectionManager;
+            _connectionManager = connectionManager;            
             }
         public OrderPricingResponse ProcessOrderPricing(OrderPricingRequest orderPricingRequest)
             {
@@ -70,8 +72,8 @@ namespace GCCB_OPE_FA_API.BLL
             result.SyncDate = DateTime.Now;//Todo        
             result.PricingDetails = CalculatePricePromo(orderPricingRequest, customer, materials, updatedMaterialGrps);
             result.SubTotalPrice = result.PricingDetails.Sum(x => x.SubTotalPrice * x.quantity);
-            result.Rewards = result.PricingDetails.Sum(x => x.Rewards * (x.freegoodqty>0?x.freegoodqty:x.quantity));
-            result.Discount = result.PricingDetails.Sum(x =>x.Discount * (x.freegoodqty > 0 ? x.freegoodqty : x.quantity));
+            result.Rewards = result.PricingDetails.Sum(x => x.Rewards * (x.freegoodqty > 0 ? x.freegoodqty : x.quantity));
+            result.Discount = result.PricingDetails.Sum(x => x.Discount * (x.freegoodqty > 0 ? x.freegoodqty : x.quantity));
             result.NetPrice = result.PricingDetails.Sum(x => x.NetPrice * x.quantity);
             result.TotalPrice = result.PricingDetails.Sum(x => x.TotalPrice * x.quantity);
             result.TotalTax = result.PricingDetails.Sum(x => x.TotalTax * x.quantity);
@@ -116,7 +118,7 @@ namespace GCCB_OPE_FA_API.BLL
                     lstPricingDetails.Add(pricingDetails);
                     }
                 }
-                   
+
 
             if (materialGroups.Where(m => m.GroupType == "REQ").Count() > 0)
                 {
@@ -129,19 +131,19 @@ namespace GCCB_OPE_FA_API.BLL
                                              where orderpricing1.isFreeGood == false
                                              select materialgroup;
 
-        List<MaterialGroups> materialgrps= filteredmaterialgroups.ToList<MaterialGroups>();
+                List<MaterialGroups> materialgrps = filteredmaterialgroups.ToList<MaterialGroups>();
 
-                if (materialgrps != null && materialgrps.Count()>0)
-                {
-                var promoappliedgrouplevel = ApplyPromotiontMaterialGroupLevel(_orderpricingRequest, materialgrps, lstPricingDetails);
+                if (materialgrps != null && materialgrps.Count() > 0)
+                    {
+                    var promoappliedgrouplevel = ApplyPromotiontMaterialGroupLevel(_orderpricingRequest, materialgrps, lstPricingDetails);
                     promotionsApplied.AddRange(promoappliedgrouplevel);
-                }
+                    }
                 }
 
-            foreach (var item in _orderpricingRequest.Items.Where(x=>x.isFreeGood==false).ToList())
+            foreach (var item in _orderpricingRequest.Items.Where(x => x.isFreeGood == false).ToList())
                 {
                 var baseprice = lstPricingDetails.Where(x => x.product.ToString() == item.ProductId).Select(x => x.SubTotalPrice).FirstOrDefault();
-                var promoapplieditemlevel = ApplyPromotiontItemLevel(_orderpricingRequest, promotions, item,baseprice);
+                var promoapplieditemlevel = ApplyPromotiontItemLevel(_orderpricingRequest, promotions, item, baseprice);
                 promotionsApplied.AddRange(promoapplieditemlevel);
                 }
 
@@ -154,7 +156,7 @@ namespace GCCB_OPE_FA_API.BLL
             .Select(g => new
                 {
                 MaterialNumber = g.Key,
-                FreeGoodQty = g.Max(p=>p.FreeGoodQty),
+                FreeGoodQty = g.Max(p => p.FreeGoodQty),
                 TotalRewardValue = g.Sum(p => p.CashDiscount),
                 PromotionIds = g.Select(p => p.PromotionID).ToList()
                 })
@@ -170,7 +172,7 @@ namespace GCCB_OPE_FA_API.BLL
                         item.freegoodqty = reward.FreeGoodQty;
                         item.promotionsApplied = reward.PromotionIds;
                         item.Discount += item.Rewards;
-                        if (item.freegoodqty==0)
+                        if (item.freegoodqty == 0)
                             {
                             item.NetPrice -= item.Rewards;
                             }
@@ -178,7 +180,7 @@ namespace GCCB_OPE_FA_API.BLL
                         var vat = (customer.TaxClassification.Equals("1") ? 5 * item.TotalPrice / 100 : 0);
                         item.TotalTax = vat;
                         item.TotalPrice += item.TotalTax;
-                        item.isFreeGoods = (item.TotalPrice)==0 ?true:false;
+                        item.isFreeGoods = (item.TotalPrice) == 0 ? true : false;
                         item.quantity -= reward.FreeGoodQty;
                         }
                     }
@@ -287,7 +289,7 @@ namespace GCCB_OPE_FA_API.BLL
             pricingDetails.PricingComponents = lstPricingComponents;
             return pricingDetails;
             }
-        public List<PromotionUtil> ApplyPromotiontItemLevel(OrderPricingRequest orderPricingRequest, List<Promotion> promotions, Item item,decimal baseprice)
+        public List<PromotionUtil> ApplyPromotiontItemLevel(OrderPricingRequest orderPricingRequest, List<Promotion> promotions, Item item, decimal baseprice)
             {
             var filteredpromotions = new List<Promotion>();
             var promotionsapplied = new List<PromotionUtil>();
@@ -301,7 +303,7 @@ namespace GCCB_OPE_FA_API.BLL
                              {
                                  var maxRewardPromotion = g.OrderByDescending(p => float.Parse(p.RewardValue)).First();
                                  var cashDiscount = !string.IsNullOrEmpty(maxRewardPromotion.RewardPercentage) && maxRewardPromotion.RewardPercentage != Constants.DefaultRewardPercentage
-                                                    ? Math.Round(decimal.Parse(maxRewardPromotion.RewardPercentage)*baseprice/100,2)
+                                                    ? Math.Round(decimal.Parse(maxRewardPromotion.RewardPercentage) * baseprice / 100, 2)
                                                     : decimal.Parse(maxRewardPromotion.RewardValue);
                                  return new PromotionUtil
                                      {
@@ -388,7 +390,7 @@ namespace GCCB_OPE_FA_API.BLL
                                 {
                                 if (promotion.RewardMaterialGroupID == rewgrp.Group)
                                     {
-                                    if (!string.IsNullOrEmpty(promotion.RewardPercentage)&&promotion.RewardPercentage!=Constants.DefaultRewardPercentage)
+                                    if (!string.IsNullOrEmpty(promotion.RewardPercentage) && promotion.RewardPercentage != Constants.DefaultRewardPercentage)
                                         {
                                         var promotionapplied = new PromotionUtil
                                             {
@@ -397,7 +399,7 @@ namespace GCCB_OPE_FA_API.BLL
                                             MaterialGroup_ID = promotion.RequirementMaterialGroupID,
                                             MaterialRewGrp = promotion.RewardMaterialGroupID,
                                             Quantity = materialQuantityList.Where(m => m.ProductId == material).Select(m => m.Quantity).FirstOrDefault(),
-                                            CashDiscount = decimal.Parse(promotion.RewardPercentage)*(materialPricingList.Where(x=>x.ProductId==material).Select(x=>x.Pricing).FirstOrDefault())/100,//decimal.Parse(promotion.RewardValue),
+                                            CashDiscount = decimal.Parse(promotion.RewardPercentage) * (materialPricingList.Where(x => x.ProductId == material).Select(x => x.Pricing).FirstOrDefault()) / 100,//decimal.Parse(promotion.RewardValue),
                                             PromotionType = promotion.PromotionType,
                                             };
                                         promotionsapplied.Add(promotionapplied);
@@ -486,7 +488,7 @@ namespace GCCB_OPE_FA_API.BLL
 
                 var filteredpromotions = ruleHandler.CheckFOCPromotionRuleAtGroupLevel(orderPricingRequest, applicablePromotions, materialgroup.TotalQuantity);
 
-                
+
 
                 foreach (var promotion in filteredpromotions)
                     {
@@ -506,7 +508,7 @@ namespace GCCB_OPE_FA_API.BLL
                         var totalQuantity = commonProductsWithQuantity.Sum(m => m.Quantity);
 
                         decimal cashdiscount = 0;
-                        bool freegoodqty =false;
+                        bool freegoodqty = false;
                         if (filteredMaterials[0] == materialgroup.Materials[0])//reward material==req material grp
                             {
                             foreach (var material in commonProductsWithQuantity.Select(x => x.ProductId).ToList())
@@ -523,7 +525,7 @@ namespace GCCB_OPE_FA_API.BLL
                                         MaterialNumber = material,
                                         MaterialGroup_ID = promotion.RequirementMaterialGroupID,
                                         MaterialRewGrp = promotion.RewardMaterialGroupID,
-                                        Quantity = totalQuantity-quantity,
+                                        Quantity = totalQuantity - quantity,
                                         CashDiscount = cashdiscount,
                                         IsFreeGoodQty = freegoodqty,
                                         PromotionType = promotion.PromotionType,
@@ -654,6 +656,28 @@ namespace GCCB_OPE_FA_API.BLL
                 }
             //var lst1 = lst.Distinct().ToList();
             return lstPricingMatrix;
+            }
+        public Task WarmUp()
+            {
+            return TestSqlConnectionAsync(connection.ConnectionString);
+            }
+
+        private async Task<bool> TestSqlConnectionAsync(string connectionString)
+            {
+            try
+                {
+                using (var connection = new SqlConnection(connectionString))
+                    {
+                    await connection.OpenAsync();
+                    // Connection successful
+                    return true;
+                    }
+                }
+            catch (Exception ex)
+                {
+                // Handle or log the exception
+                return false;
+                }
             }
         }
     }
