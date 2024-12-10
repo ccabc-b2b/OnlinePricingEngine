@@ -1,31 +1,64 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Web.Http;
+using GCCB_OPE_FA_API.BLL;
+using Microsoft.Identity.Client.Extensibility;
 
-namespace GCCB_OPE_FA_API
+namespace LoyaltyProgram.Functions
     {
-    public class HealthCheckFunction
+    public class HealthCheckFunctions
         {
-        private readonly HealthCheckService _healthCheckService;
+        private readonly OrderPricing orderPricing;
 
-        public HealthCheckFunction(HealthCheckService healthCheckService)
+        public HealthCheckFunctions(
+            OrderPricing orderPricing)
             {
-            _healthCheckService = healthCheckService;
+            this.orderPricing = orderPricing;
+            }
+
+        [FunctionName("Ping")]
+        public IActionResult Ping(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "head", Route = null)] HttpRequest req,
+            ILogger log)
+            {
+            return new NoContentResult();
+            }
+
+        [FunctionName("Warmup")]
+        public async Task Warmup([WarmupTrigger] WarmupContext ctx)
+            {
+            await CheckExternalDependencies().ConfigureAwait(false);
             }
 
         [FunctionName("HealthCheck")]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
-            ILogger log)
+        public async Task<IActionResult> HealthCheck(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
+            ILogger log
+        )
             {
-            var report = await _healthCheckService.CheckHealthAsync();
-            var result = report.Status == HealthStatus.Healthy ? "Healthy" : "Unhealthy";
+            try
+                {
+                await CheckExternalDependencies().ConfigureAwait(false);
+                }
+            catch (Exception e)
+                {
+                log.LogError(e, "Error checking external dependencies");
+                return new ExceptionResult(e, includeErrorDetail: true);
+                }
+            return new OkResult();
+            }
 
-            return new OkObjectResult(result);
+        private Task CheckExternalDependencies()
+            {
+            return Task.WhenAll(
+                orderPricing.WarmUp()
+            );
             }
         }
     }
