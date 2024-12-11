@@ -17,11 +17,12 @@ namespace GCCB_OPE_FA_API.BLL
         private readonly ILogger _logger;
         private readonly ConnectionManager _connectionManager;
         public OrderPricingRequest _orderpricingRequest;
-        private readonly Connection connection;
-        public OrderPricing(ILogger<OrderPricing> logger, ConnectionManager connectionManager)
+        private readonly Connection _connection;
+        public OrderPricing(ILogger<OrderPricing> logger, ConnectionManager connectionManager, Connection connection)
             {
             _logger = logger;
-            _connectionManager = connectionManager;            
+            _connectionManager = connectionManager;
+            _connection = connection;
             }
         public OrderPricingResponse ProcessOrderPricing(OrderPricingRequest orderPricingRequest)
             {
@@ -659,7 +660,7 @@ namespace GCCB_OPE_FA_API.BLL
             }
         public Task WarmUp()
             {
-            return TestSqlConnectionAsync(connection.ConnectionString);
+            return TestSqlConnectionAsync(_connection.ConnectionString);
             }
 
         private async Task<bool> TestSqlConnectionAsync(string connectionString)
