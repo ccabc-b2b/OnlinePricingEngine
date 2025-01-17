@@ -596,75 +596,67 @@ namespace GCCB_OPE_FA_API.BLL
 
         private List<PricingMatrix> VariableKeyMapping(Customer customer, Material material, string country)
             {
-            try
-                {
-                var parameter = new SqlParameter[] {
+            var parameter = new SqlParameter[] {
                 new SqlParameter("@Country",country)
             };
-                List<PricingMatrix> lstPricingMatrix = Util.DataTabletoList<PricingMatrix>(_connectionManager.ExecuteStoredProcedure("PricingMatrixFetch", parameter));
-                throw new NullReferenceException();
-                foreach (var pricingMatrix in lstPricingMatrix)
-                    {
-                    var variableKey = "";
-                    List<string> splitKeys = pricingMatrix.VariableKeyFetch.Split('+').ToList();
-                    foreach (var splitKey in splitKeys)
-                        {
-                        switch (splitKey)
-                            {
-                            case Constants.Customer:
-                                variableKey += (customer.CustomerNumber != null) ? customer.CustomerNumber.PadRight(Util.CharLengthMapping(Constants.Customer), ' ') : "";
-                                //variableKey += "0000005000";
-                                break;
-                            case Constants.Material:
-                                //variableKey += "10151900";
-                                variableKey += (material.MaterialNumber != null) ? material.MaterialNumber.PadRight(Util.CharLengthMapping(Constants.Material), '0') : "";
-                                break;
-                            case Constants.PriceList:
-                                variableKey += (customer.PriceListType != null) ? customer.PriceListType.PadRight(Util.CharLengthMapping(Constants.PriceList), ' ') : "";
-                                break;
-                            case Constants.SalesOrg:
-                                variableKey += (customer.SalesOrg != null) ? customer.SalesOrg.PadRight(Util.CharLengthMapping(Constants.SalesOrg), ' ') : "";
-                                break;
-                            case Constants.SalesGroup:
-                                variableKey += (customer.SalesGroup != null) ? customer.SalesGroup.PadRight(Util.CharLengthMapping(Constants.SalesGroup), ' ') : "";
-                                break;
-                            case Constants.MaterialGroup:
-                                variableKey += (material.MaterialGroup != null) ? material.MaterialGroup.PadRight(Util.CharLengthMapping(Constants.MaterialGroup), ' ') : "";
-                                break;
-                            case Constants.KeyAccount:
-                                variableKey += (customer.IndustryCode1 != null) ? customer.IndustryCode1.PadRight(Util.CharLengthMapping(Constants.KeyAccount), ' ') : "";
-                                break;
-                            case Constants.Plant:
-                                variableKey += (material.PlantID != null) ? material.PlantID.PadRight(Util.CharLengthMapping(Constants.Plant), ' ') : "";
-                                break;
-                            case Constants.PaymentTerms:
-                                variableKey += (customer.PaymentTerms != null) ? customer.PaymentTerms.PadRight(Util.CharLengthMapping(Constants.PaymentTerms), ' ') : "";
-                                break;
-                            case Constants.BottlerTr:
-                                variableKey += (customer.BottlerTr != null) ? customer.BottlerTr.PadRight(Util.CharLengthMapping(Constants.BottlerTr), ' ') : "";
-                                break;
-                            case Constants.SubTrade:
-                                variableKey += (customer.BottlerTr != null) ? customer.BottlerTr.PadRight(Util.CharLengthMapping(Constants.SubTrade), ' ') : "";
-                                break;
-                            case Constants.POType:
-                                variableKey += (customer.POType != null) ? customer.POType.PadRight(Util.CharLengthMapping(Constants.POType), ' ') : "";
-                                break;
-                            case Constants.SubTradeChannel:
-                                variableKey += (customer.CustomerSubTrade != null) ? customer.CustomerSubTrade.PadRight(Util.CharLengthMapping(Constants.SubTradeChannel), ' ') : "";
-                                break;
-                            default:
-                                break;
-                            }
-                        }
-                    pricingMatrix.VariableKeyValue = variableKey;
-                    }
-                //var lst1 = lst.Distinct().ToList();
-                return lstPricingMatrix;
-                }
-            catch(Exception ex)
+            List<PricingMatrix> lstPricingMatrix = Util.DataTabletoList<PricingMatrix>(_connectionManager.ExecuteStoredProcedure("PricingMatrixFetch", parameter));
+            foreach (var pricingMatrix in lstPricingMatrix)
                 {
-                return null;
+                var variableKey = "";
+                List<string> splitKeys = pricingMatrix.VariableKeyFetch.Split('+').ToList();
+                foreach (var splitKey in splitKeys)
+                    {
+                    switch (splitKey)
+                        {
+                        case Constants.Customer:
+                            variableKey += (customer.CustomerNumber != null) ? customer.CustomerNumber.PadRight(Util.CharLengthMapping(Constants.Customer), ' ') : "";
+                            //variableKey += "0000005000";
+                            break;
+                        case Constants.Material:
+                            //variableKey += "10151900";
+                            variableKey += (material.MaterialNumber != null) ? material.MaterialNumber.PadRight(Util.CharLengthMapping(Constants.Material), '0') : "";
+                            break;
+                        case Constants.PriceList:
+                            variableKey += (customer.PriceListType != null) ? customer.PriceListType.PadRight(Util.CharLengthMapping(Constants.PriceList), ' ') : "";
+                            break;
+                        case Constants.SalesOrg:
+                            variableKey += (customer.SalesOrg != null) ? customer.SalesOrg.PadRight(Util.CharLengthMapping(Constants.SalesOrg), ' ') : "";
+                            break;
+                        case Constants.SalesGroup:
+                            variableKey += (customer.SalesGroup != null) ? customer.SalesGroup.PadRight(Util.CharLengthMapping(Constants.SalesGroup), ' ') : "";
+                            break;
+                        case Constants.MaterialGroup:
+                            variableKey += (material.MaterialGroup != null) ? material.MaterialGroup.PadRight(Util.CharLengthMapping(Constants.MaterialGroup), ' ') : "";
+                            break;
+                        case Constants.KeyAccount:
+                            variableKey += (customer.IndustryCode1 != null) ? customer.IndustryCode1.PadRight(Util.CharLengthMapping(Constants.KeyAccount), ' ') : "";
+                            break;
+                        case Constants.Plant:
+                            variableKey += (material.PlantID != null) ? material.PlantID.PadRight(Util.CharLengthMapping(Constants.Plant), ' ') : "";
+                            break;
+                        case Constants.PaymentTerms:
+                            variableKey += (customer.PaymentTerms != null) ? customer.PaymentTerms.PadRight(Util.CharLengthMapping(Constants.PaymentTerms), ' ') : "";
+                            break;
+                        case Constants.BottlerTr:
+                            variableKey += (customer.BottlerTr != null) ? customer.BottlerTr.PadRight(Util.CharLengthMapping(Constants.BottlerTr), ' ') : "";
+                            break;
+                        case Constants.SubTrade:
+                            variableKey += (customer.BottlerTr != null) ? customer.BottlerTr.PadRight(Util.CharLengthMapping(Constants.SubTrade), ' ') : "";
+                            break;
+                        case Constants.POType:
+                            variableKey += (customer.POType != null) ? customer.POType.PadRight(Util.CharLengthMapping(Constants.POType), ' ') : "";
+                            break;
+                        case Constants.SubTradeChannel:
+                            variableKey += (customer.CustomerSubTrade != null) ? customer.CustomerSubTrade.PadRight(Util.CharLengthMapping(Constants.SubTradeChannel), ' ') : "";
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                pricingMatrix.VariableKeyValue = variableKey;
                 }
+            //var lst1 = lst.Distinct().ToList();
+            return lstPricingMatrix;
             }
         public Task WarmUp()
             {
