@@ -1,4 +1,5 @@
-﻿using GCCB_OPE_FA_API.BLL.Models;
+﻿using Azure;
+using GCCB_OPE_FA_API.BLL.Models;
 using GCCB_OPE_FA_API.DataManagers;
 using GCCB_OPE_FA_API.DataManagers.Models;
 using Microsoft.Extensions.Logging;
@@ -26,62 +27,76 @@ namespace GCCB_OPE_FA_API.BLL
             }
         public OrderPricingResponse ProcessOrderPricing(OrderPricingRequest orderPricingRequest)
             {
-            //var key = $"{CountryCode}_{ConditionType}_{variablekey}"; 
-            _logger.LogInformation("Process order pricing");
-
-            _orderpricingRequest = orderPricingRequest;
-
-            var customerParameter = new SqlParameter[] {
-                new SqlParameter("@CustomerNumber",orderPricingRequest.SoldToCustomerId)
-            };
-            var customer = Util.DataTabletoList<Customer>(_connectionManager.ExecuteStoredProcedure("CustomerFetch", customerParameter)).FirstOrDefault();
-            //string value = "'"+string.Join("','", productIds)+"'";
-            var materialParameter = new SqlParameter[]
-            {
-                new SqlParameter("@MaterialNumber",string.Join(",", orderPricingRequest.Items.Select(x => x.ProductId).ToList()))
-            };
-            var materials = Util.DataTabletoList<Material>(_connectionManager.ExecuteStoredProcedure("MaterialFetch", materialParameter));
-
-            var materialGroupParameter = new SqlParameter[]
-            {
-                new SqlParameter("@MaterialNumber",string.Join(",", orderPricingRequest.Items.Select(x => x.ProductId).ToList()))
-            };
-            var materialGrps = Util.DataTabletoList<MaterialGroups>(_connectionManager.ExecuteStoredProcedure("MaterialGroupFetch", materialGroupParameter));
-
-            var filteredMaterialGrps = materialGrps
-             .Where(mg => !string.IsNullOrEmpty(mg.MaterialGroup))
-             .ToList();
-
-            // Step 2: Update the Quantity from the Item object
-            var updatedMaterialGrps = filteredMaterialGrps
-                .Select(mg =>
-                {
-                    var item = orderPricingRequest.Items.FirstOrDefault(i => i.ProductId == mg.MaterialNumber);
-                    if (item != null)
-                        {
-                        mg.Quantity = item.Quantity;
-                        }
-                    return mg;
-                })
-                .ToList();
-
             var response = new OrderPricingResponse();
+            try
+                {
+                //var key = $"{CountryCode}_{ConditionType}_{variablekey}"; 
+                _logger.LogInformation("Process order pricing");
 
-            response.Status = (int)HttpStatusCode.OK;
-            response.Message = Constants.SuccessMessage;
-            var result = new Result();
-            result.SyncDate = DateTime.Now;//Todo        
-            result.PricingDetails = CalculatePricePromo(orderPricingRequest, customer, materials, updatedMaterialGrps);
-            result.SubTotalPrice = result.PricingDetails.Sum(x => x.SubTotalPrice * x.quantity);
-            result.Rewards = result.PricingDetails.Sum(x => x.Rewards * (x.freegoodqty > 0 ? x.freegoodqty : x.quantity));
-            result.Discount = result.PricingDetails.Sum(x => x.Discount * (x.freegoodqty > 0 ? x.freegoodqty : x.quantity));
-            result.NetPrice = result.PricingDetails.Sum(x => x.NetPrice * x.quantity);
-            result.TotalPrice = result.PricingDetails.Sum(x => x.TotalPrice * x.quantity);
-            result.TotalTax = result.PricingDetails.Sum(x => x.TotalTax * x.quantity);
-            result.SalesOrg = customer.SalesOrg;
-            result.SalesRoute = customer.SalesRoute;
-            response.Result = result;
+                _orderpricingRequest = orderPricingRequest;
 
+                var customerParameter = new SqlParameter[] {
+                new SqlParameter("@CustomerNumber",orderPricingRequest.SoldToCustomerId)
+                };
+                var customer = Util.DataTabletoList<Customer>(_connectionManager.ExecuteStoredProcedure("CustomerFetch", customerParameter)).FirstOrDefault();
+                //string value = "'"+string.Join("','", productIds)+"'";
+                var materialParameter = new SqlParameter[]
+                {
+                new SqlParameter("@MaterialNumber",string.Join(",", orderPricingRequest.Items.Select(x => x.ProductId).ToList()))
+                };
+                var materials = Util.DataTabletoList<Material>(_connectionManager.ExecuteStoredProcedure("MaterialFetch", materialParameter));
+
+                var materialGroupParameter = new SqlParameter[]
+                {
+                new SqlParameter("@MaterialNumber",string.Join(",", orderPricingRequest.Items.Select(x => x.ProductId).ToList()))
+                };
+                var materialGrps = Util.DataTabletoList<MaterialGroups>(_connectionManager.ExecuteStoredProcedure("MaterialGroupFetch", materialGroupParameter));
+
+                var filteredMaterialGrps = materialGrps
+                 .Where(mg => !string.IsNullOrEmpty(mg.MaterialGroup))
+                 .ToList();
+
+                // Step 2: Update the Quantity from the Item object
+                var updatedMaterialGrps = filteredMaterialGrps
+                    .Select(mg =>
+                    {
+                        var item = orderPricingRequest.Items.FirstOrDefault(i => i.ProductId == mg.MaterialNumber);
+                        if (item != null)
+                            {
+                            mg.Quantity = item.Quantity;
+                            }
+                        return mg;
+                    })
+                    .ToList();
+
+                response.Status = (int)HttpStatusCode.OK;
+                response.Message = Constants.SuccessMessage;
+                var result = new Result();
+                result.SyncDate = DateTime.Now;//Todo        
+                result.PricingDetails = CalculatePricePromo(orderPricingRequest, customer, materials, updatedMaterialGrps);
+                result.SubTotalPrice = result.PricingDetails.Sum(x => x.SubTotalPrice * x.quantity);
+                result.Rewards = result.PricingDetails.Sum(x => x.Rewards * (x.freegoodqty > 0 ? x.freegoodqty : x.quantity));
+                result.Discount = result.PricingDetails.Sum(x => x.Discount * (x.freegoodqty > 0 ? x.freegoodqty : x.quantity));
+                result.NetPrice = result.PricingDetails.Sum(x => x.NetPrice * x.quantity);
+                result.TotalPrice = result.PricingDetails.Sum(x => x.TotalPrice * x.quantity);
+                result.TotalTax = result.PricingDetails.Sum(x => x.TotalTax * x.quantity);
+                result.SalesOrg = customer.SalesOrg;
+                result.SalesRoute = customer.SalesRoute;
+                response.Result = result;
+                }
+
+            catch (SqlException ex)
+                {
+                _logger.LogError(ex, "SQL error occurred while processing order pricing.");
+                response.Status = (int)HttpStatusCode.InternalServerError;
+                response.Message = "An error occurred while accessing the database.";
+                }
+            catch (Exception ex)
+                {
+                _logger.LogError(ex, "An unexpected error occurred while processing order pricing.");
+                response.Status = (int)HttpStatusCode.InternalServerError;
+                response.Message = "An unexpected error occurred.";
+                }
             return response;
             }
 
@@ -115,7 +130,7 @@ namespace GCCB_OPE_FA_API.BLL
                     };
                     var conditionItems = Util.DataTabletoList<ConditionItems>(_connectionManager.ExecuteStoredProcedure("ConditionItemsFetch", conditionItemsParameter));
                     conditionItems.ForEach(x => x.ConditionAmountOrPercentageRate.Replace("-", ""));
-                    var pricingDetails = CalculatePricing(orderPricingRequest, item, customer, conditionItems, keyMappings, promotions, materialGroups);
+                    var pricingDetails = CalculatePricing(orderPricingRequest, item, customer, conditionItems, keyMappings);
                     lstPricingDetails.Add(pricingDetails);
                     }
                 }
@@ -189,7 +204,7 @@ namespace GCCB_OPE_FA_API.BLL
                 }
             return lstPricingDetails;
             }
-        public PricingDetails CalculatePricing(OrderPricingRequest orderPricingRequest, Item item, Customer customer, List<ConditionItems> conditionItems, List<PricingMatrix> keyMappings, List<Promotion> promotions, List<MaterialGroups> materialGroups)
+        public PricingDetails CalculatePricing(OrderPricingRequest orderPricingRequest, Item item, Customer customer, List<ConditionItems> conditionItems, List<PricingMatrix> keyMappings)
             {
             var pricingDetails = new PricingDetails();
             pricingDetails.product = Convert.ToInt32(item.ProductId);
