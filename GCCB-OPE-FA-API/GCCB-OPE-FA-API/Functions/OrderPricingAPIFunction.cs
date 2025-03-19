@@ -28,6 +28,7 @@ namespace GCCB_OPE_FA_API.Functions
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)][RequestBodyType(typeof(OrderPricingRequest), "")] HttpRequest req,
             ILogger log)
         {
+            //Added Exception Handling
             try
             {
                 var apiKey = req.Headers["x-api-key"];
