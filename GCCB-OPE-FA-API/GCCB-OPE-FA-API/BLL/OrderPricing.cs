@@ -252,7 +252,8 @@ namespace GCCB_OPE_FA_API.BLL
                 }
             if (orderPricingRequest.Currency == Constants.QAR)
                 {
-                var grossValue = (rules.Select(x => x.YPR0).FirstOrDefault() < rules.Select(x => x.YBAJ).FirstOrDefault()) ? rules.Select(x => x.YPR0).FirstOrDefault() : rules.Select(x => x.YBAJ).FirstOrDefault();//YPR0 less YBAJ;
+                //var grossValue = (rules.Select(x => x.YPR0).FirstOrDefault() < rules.Select(x => x.YBAJ).FirstOrDefault()) ? rules.Select(x => x.YPR0).FirstOrDefault() : rules.Select(x => x.YBAJ).FirstOrDefault();//YPR0 less YBAJ;
+                var grossValue = rules.Select(x => x.YPR0).FirstOrDefault() + rules.Select(x => x.YBAJ).FirstOrDefault();//YPR0 - YBAJ;
                 var totalTradeDiscount = rules.Select(x => x.YBUY).FirstOrDefault() + rules.Select(x => x.YTDN).FirstOrDefault() + rules.Select(x => x.YRPO).FirstOrDefault();//YBUY + YTDN + YRPO;
                 var netofTradeDiscount = grossValue - totalTradeDiscount;
                 var netofEDLP = netofTradeDiscount - rules.Select(x => x.YELP).FirstOrDefault();
