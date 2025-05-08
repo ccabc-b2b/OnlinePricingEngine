@@ -32,7 +32,10 @@ namespace GCCB_OPE_FA_API.BLL
                 new SqlParameter("@CustomerNumber",catalogueRequest.SoldToCustomerId)
             };
             var customer = Util.DataTabletoList<Customer>(_connectionManager.ExecuteStoredProcedure("CustomerFetch", customerParameter)).FirstOrDefault();
-            List<string> materiallist = ConvertDataTableToListOfString(_connectionManager.ExecuteStoredProcedure("FetchMaterialList", customerParameter));
+            var _customerParameter = new SqlParameter[] {
+                new SqlParameter("@CustomerNumber",catalogueRequest.SoldToCustomerId)
+            };
+            List<string> materiallist = ConvertDataTableToListOfString(_connectionManager.ExecuteStoredProcedure("FetchMaterialList", _customerParameter));
             var materialParameter = new SqlParameter[]
             {
                 new SqlParameter("@MaterialNumber",string.Join(",", materiallist.ToList()))
@@ -69,7 +72,7 @@ namespace GCCB_OPE_FA_API.BLL
 
                 Items item = new Items();
                 item.ProductId = material.MaterialNumber;
-                item.BasePrice = conditionItems[0].ConditionAmountOrPercentageRate;  
+                item.BasePrice = conditionItems.Where(c => c.ConditionType == "YPR0").Select(c => c.ConditionAmountOrPercentageRate).FirstOrDefault();
                 lstItems.Add(item);
             }
             return lstItems;
